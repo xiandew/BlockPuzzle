@@ -12336,44 +12336,11 @@ function Pc(n) {
     }
   };
   q.J = function() {
-    this.Vs = !("undefined" === typeof window.c2isWindows8 || !window.c2isWindows8);
     this.Zd = this.bd = this.Db = this.Qb = this.Pb = this.Ck = this.Bk = this.Ak = this.or = this.nr = this.mr = this.Af = this.zf = this.yf = 0;
     this.Tp = 0 !== this.u[0];
-    var a = 0 < this.e.hd ? document : this.e.canvas,
-      b = document;
-    this.e.Vb ? b = a = window.Canvas : this.e.ae && (b = a = window);
+    var a = b = this.e.canvas;
     var c = this;
-    window.navigator.pointerEnabled ? (a.addEventListener("pointerdown", function(a) {
-      c.fm(a)
-    }, !1), a.addEventListener("pointermove", function(a) {
-      c.em(a)
-    }, !1), b.addEventListener("pointerup",
-      function(a) {
-        c.vg(a, !1)
-      }, !1), b.addEventListener("pointercancel", function(a) {
-      c.vg(a, !0)
-    }, !1), this.e.canvas && (this.e.canvas.addEventListener("MSGestureHold", function(a) {
-      a.preventDefault()
-    }, !1), document.addEventListener("MSGestureHold", function(a) {
-      a.preventDefault()
-    }, !1), this.e.canvas.addEventListener("gesturehold", function(a) {
-      a.preventDefault()
-    }, !1), document.addEventListener("gesturehold", function(a) {
-      a.preventDefault()
-    }, !1))) : window.navigator.msPointerEnabled ? (a.addEventListener("MSPointerDown", function(a) {
-        c.fm(a)
-      },
-      !1), a.addEventListener("MSPointerMove", function(a) {
-      c.em(a)
-    }, !1), b.addEventListener("MSPointerUp", function(a) {
-      c.vg(a, !1)
-    }, !1), b.addEventListener("MSPointerCancel", function(a) {
-      c.vg(a, !0)
-    }, !1), this.e.canvas && (this.e.canvas.addEventListener("MSGestureHold", function(a) {
-      a.preventDefault()
-    }, !1), document.addEventListener("MSGestureHold", function(a) {
-      a.preventDefault()
-    }, !1))) : (a.addEventListener("touchstart", function(a) {
+    (a.addEventListener("touchstart", function(a) {
       c.im(a)
     }, !1), a.addEventListener("touchmove", function(a) {
       c.hm(a)
@@ -12383,28 +12350,7 @@ function Pc(n) {
       }, !1), b.addEventListener("touchcancel", function(a) {
       c.wi(a, !0)
     }, !1));
-    if (this.Vs) {
-      var e = function(a) {
-          a = a.reading;
-          c.Ak = a.accelerationX;
-          c.Bk = a.accelerationY;
-          c.Ck = a.accelerationZ
-        },
-        d = function(a) {
-          a = a.reading;
-          c.yf = a.yawDegrees;
-          c.zf = a.pitchDegrees;
-          c.Af = a.rollDegrees
-        },
-        f = Windows.Devices.Sensors.Accelerometer.getDefault();
-      f && (f.reportInterval = Math.max(f.minimumReportInterval, 16), f.addEventListener("readingchanged", e));
-      var g = Windows.Devices.Sensors.Inclinometer.getDefault();
-      g && (g.reportInterval =
-        Math.max(g.minimumReportInterval, 16), g.addEventListener("readingchanged", d));
-      document.addEventListener("visibilitychange", function() {
-        document.hidden || document.msHidden ? (f && f.removeEventListener("readingchanged", e), g && g.removeEventListener("readingchanged", d)) : (f && f.addEventListener("readingchanged", e), g && g.addEventListener("readingchanged", d))
-      }, !1)
-    } else window.addEventListener("deviceorientation", function(a) {
+    window.addEventListener("deviceorientation", function(a) {
       c.yf = a.alpha || 0;
       c.zf = a.beta || 0;
       c.Af = a.gamma || 0
@@ -12413,17 +12359,6 @@ function Pc(n) {
         a.accelerationIncludingGravity && (c.mr = a.accelerationIncludingGravity.x || 0, c.nr = a.accelerationIncludingGravity.y || 0, c.or = a.accelerationIncludingGravity.z || 0);
         a.acceleration && (c.Ak = a.acceleration.x || 0, c.Bk = a.acceleration.y || 0, c.Ck = a.acceleration.z || 0)
       }, !1);
-    this.Tp && !this.e.gb && (
-      canvas.addEventListener("mousemove", function(a) {
-        c.It(a)
-      }),
-      canvas.addEventListener("mousedown", function(a) {
-        c.Ht(a)
-      }),
-      canvas.addEventListener("mouseup", function(a) {
-        c.Jt(a)
-      })
-    );
     !this.e.uj && this.e.Od && navigator.accelerometer && navigator.accelerometer.watchAcceleration &&
       navigator.accelerometer.watchAcceleration(n, null, {
         frequency: 40
@@ -13116,8 +13051,7 @@ function X(n) {
           // var h = this.e.gb ? k : jQuery(this.e.canvas).offset();
           var h = k;
           f = this.touches[f];
-          if (!(2 > b - f.time))
-            for (f.update(b, d.pageX - h.left, d.pageY - h.top), f = 0; f < g; f++) this.kc[f].iB && this.kc[f].iB(d.identifier, d.pageX - h.left, d.pageY - h.top)
+          for (f.update(b, d.pageX - h.left, d.pageY - h.top), f = 0; f < g; f++) this.kc[f].iB && this.kc[f].iB(d.identifier, d.pageX - h.left, d.pageY - h.top)
         }
     }
   };
