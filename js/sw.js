@@ -1,6 +1,6 @@
 "use strict";
 
-const OFFLINE_DATA_FILE = "offline.js";
+const OFFLINE_DATA_FILE = "offline.json";
 const BROADCASTCHANNEL_NAME = "offline";
 const CONSOLE_PREFIX = "[SW] ";
 
