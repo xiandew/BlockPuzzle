@@ -1602,8 +1602,7 @@ function vc(n, h, d, l) {
       O.webkitImageSmoothingEnabled = c;
       O.mozImageSmoothingEnabled = c;
       O.msImageSmoothingEnabled = c;
-      O.imageSmoothingEnabled =
-        c;
+      O.imageSmoothingEnabled = c;
       O.drawImage(a, 0, 0, a.width, a.height, 0, 0, b.width, b.height);
       p.texImage2D(p.TEXTURE_2D, 0, d, h, r, b)
     } else p.texImage2D(p.TEXTURE_2D, 0, d, h, r, a);
@@ -1753,7 +1752,6 @@ function vc(n, h, d, l) {
       }, window.ondrop = function(b) {
         b.preventDefault();
         return !1
-        // }, require("nw.gui").App.clearCache());
       });
       this.bo && "undefined" !== typeof jQuery && jQuery("canvas").parents("*").css("overflow", "visible");
       this.width = b.width;
@@ -1898,42 +1896,7 @@ function vc(n, h, d, l) {
   }
   var c = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame;
   d.prototype.RF = function() {
-    var b = this,
-      a;
-    return b.Co(data);
-
-    this.tf ? a = new ActiveXObject("Microsoft.XMLHTTP") : a = new XMLHttpRequest;
-    var e = "data.js";
-    if (this.nx || this.tf || this.yl || this.lx) e = "data.json";
-    a.open("GET", e, !0);
-    var g = !1;
-    if (!this.gb && "response" in a && "responseType" in a) try {
-      a.responseType = "json", g = "json" === a.responseType
-    } catch (c) {
-      g = !1
-    }
-    if (!g && "responseType" in a) try {
-      a.responseType = "text"
-    } catch (p) {}
-    if ("overrideMimeType" in a) try {
-      a.overrideMimeType("application/json; charset=utf-8")
-    } catch (k) {}
-    this.tf ? a.onreadystatechange = function() {
-        4 === a.readyState && b.Co(JSON.parse(a.responseText))
-      } :
-      (a.onload = function() {
-          if (g) b.Co(a.response);
-          else if (b.Pe) {
-            var e = a.responseText,
-              e = e.substr(e.indexOf("{"));
-            b.Co(JSON.parse(e))
-          } else b.Co(JSON.parse(a.responseText))
-        },
-        a.onerror = function(b) {
-          ha("Error requesting " + e + ":");
-          ha(b)
-        });
-    a.send()
+    return this.Co(data);
   };
   d.prototype.GE = function() {
     var b =
@@ -1957,16 +1920,6 @@ function vc(n, h, d, l) {
     if (this.V) {
       if (a = this.V.getExtension("WEBGL_debug_renderer_info")) this.ys = this.V.getParameter(a.UNMASKED_RENDERER_WEBGL) + " [" + this.V.getParameter(a.UNMASKED_VENDOR_WEBGL) + "]";
       this.pb && (this.ys += " [front-to-back enabled]");
-      // this.gb && (
-      //     this.zc = document.createElement("canvas"),
-      //     jQuery(this.zc).appendTo(this.canvas.parentNode),
-      //     this.zc.oncontextmenu = function () { return !1 }, this.zc.onselectstart = function () { return !1 }, this.zc.width =
-      //     Math.round(this.xn * this.devicePixelRatio),
-      //     this.zc.height = Math.round(this.Tk * this.devicePixelRatio),
-      //     jQuery(this.zc).css({ width: this.xn + "px", height: this.Tk + "px" }),
-      //     this.xy(),
-      //     this.Pt = this.zc.getContext("2d")
-      // );
       this.R = new sb(this.V, this.sf, this.pb);
       this.R.Fi(this.canvas.width, this.canvas.height);
       this.R.Aw = 0 !== this.eD;
@@ -2034,15 +1987,6 @@ function vc(n, h, d, l) {
     this.cz = function(a) {
       b.ib(!1, a)
     };
-    window == window.top || this.gb || this.Us || this.tf ||
-      (
-        document.addEventListener("mousedown", function() {
-          /* window.focus() */
-        }, !0),
-        document.addEventListener("touchstart", function() {
-          /* window.focus() */
-        }, !0)
-      );
     "undefined" !== typeof cr_is_preview && (this.ae && console.log("[Construct 2] In preview-over-wifi via CocoonJS mode"), -1 < window.location.search.indexOf("continuous") && (ga("Reloading for continuous preview"), this.Ao = "__c2_continuouspreview", this.Em = !0), this.BF && !this.sf && (jQuery(window).focus(function() {
       b.setSuspended(!1)
     }), jQuery(window).blur(function() {
@@ -2090,9 +2034,7 @@ function vc(n, h, d, l) {
           height: Math.round(a) + "px"
         })), this.canvas && (this.canvas.width = Math.round(b * e), this.canvas.height = Math.round(a * e), this.Pe ? (this.canvas.style.left = Math.floor(g) + "px", this.canvas.style.top = Math.floor(c) + "px", this.canvas.style.width = Math.round(b) + "px", this.canvas.style.height = Math.round(a) +
           "px") : this.gi && !this.gb && (this.canvas.style.width = Math.round(b) + "px", this.canvas.style.height = Math.round(a) + "px")), this.zc && (this.zc.width = Math.round(b * e), this.zc.height = Math.round(a * e), this.zc.style.width = this.xn + "px", this.zc.style.height = this.Tk + "px"), this.R && this.R.Fi(Math.round(b * e), Math.round(a * e)), this.Vb && this.eb && (this.eb.width = Math.round(b), this.eb.height = Math.round(a)), this.eb && (this.eb.webkitImageSmoothingEnabled = this.xa, this.eb.mozImageSmoothingEnabled = this.xa, this.eb.msImageSmoothingEnabled =
-          this.xa, this.eb.imageSmoothingEnabled = this.xa), this.hz(), this.gb || !f && !this.bt || window.setTimeout(function() {
-          window.scrollTo(0, 1)
-        }, 100)
+          this.xa, this.eb.imageSmoothingEnabled = this.xa), this.hz()
     }
   };
   d.prototype.hz = function() {
@@ -12418,15 +12360,13 @@ function Pc(n) {
     c = 0;
     for (e = a.changedTouches.length; c < e; c++)
       if (d = a.changedTouches[c], f = this.lc(d.identifier), 0 <= f) {
-        // var g = this.e.gb ? m : jQuery(this.e.canvas).offset();
         var g = m;
         f = this.touches[f];
-        2 > b - f.time || f.update(b, d.pageX - g.left, d.pageY - g.top)
+        f.update(b, d.pageX - g.left, d.pageY - g.top)
       }
   };
   q.im = function(a) {
     a.preventDefault && rb(a) && a.preventDefault();
-    // var b = this.e.gb ? m : jQuery(this.e.canvas).offset();
     var b = m;
     cb();
     this.e.Gb = !0;
@@ -12890,42 +12830,9 @@ function X(n) {
     this.Vs = !("undefined" === typeof window.c2isWindows8 || !window.c2isWindows8);
     this.Zd = this.bd = this.Db = this.Qb = this.Pb = this.Ck = this.Bk = this.Ak = this.or = this.nr = this.mr = this.Af = this.zf = this.yf = 0;
     this.Tp = 0 !== this.u[0];
-    var a = 0 < this.e.hd ? document : this.e.canvas,
-      b = document;
-    this.e.Vb ? b = a = window.Canvas :
-      this.e.ae && (b = a = window);
+    var a = b = this.e.canvas;
     var c = this;
-    window.navigator.pointerEnabled ? (a.addEventListener("pointerdown", function(a) {
-      c.fm(a)
-    }, !1), a.addEventListener("pointermove", function(a) {
-      c.em(a)
-    }, !1), b.addEventListener("pointerup", function(a) {
-      c.vg(a, !1)
-    }, !1), b.addEventListener("pointercancel", function(a) {
-      c.vg(a, !0)
-    }, !1), this.e.canvas && (this.e.canvas.addEventListener("MSGestureHold", function(a) {
-      a.preventDefault()
-    }, !1), document.addEventListener("MSGestureHold", function(a) {
-      a.preventDefault()
-    }, !1), this.e.canvas.addEventListener("gesturehold",
-      function(a) {
-        a.preventDefault()
-      }, !1), document.addEventListener("gesturehold", function(a) {
-      a.preventDefault()
-    }, !1))) : window.navigator.msPointerEnabled ? (a.addEventListener("MSPointerDown", function(a) {
-      c.fm(a)
-    }, !1), a.addEventListener("MSPointerMove", function(a) {
-      c.em(a)
-    }, !1), b.addEventListener("MSPointerUp", function(a) {
-      c.vg(a, !1)
-    }, !1), b.addEventListener("MSPointerCancel", function(a) {
-      c.vg(a, !0)
-    }, !1), this.e.canvas && (this.e.canvas.addEventListener("MSGestureHold", function(a) {
-      a.preventDefault()
-    }, !1), document.addEventListener("MSGestureHold",
-      function(a) {
-        a.preventDefault()
-      }, !1))) : (a.addEventListener("touchstart", function(a) {
+    (a.addEventListener("touchstart", function(a) {
       c.im(a)
     }, !1), a.addEventListener("touchmove", function(a) {
       c.hm(a)
@@ -12934,53 +12841,6 @@ function X(n) {
     }, !1), b.addEventListener("touchcancel", function(a) {
       c.wi(a, !0)
     }, !1));
-    if (this.Vs) {
-      var e = function(a) {
-          a = a.reading;
-          c.Ak = a.accelerationX;
-          c.Bk = a.accelerationY;
-          c.Ck = a.accelerationZ
-        },
-        d = function(a) {
-          a = a.reading;
-          c.yf = a.yawDegrees;
-          c.zf = a.pitchDegrees;
-          c.Af = a.rollDegrees
-        },
-        f = Windows.Devices.Sensors.Accelerometer.getDefault();
-      f && (f.reportInterval = Math.max(f.minimumReportInterval, 16), f.addEventListener("readingchanged", e));
-      var g = Windows.Devices.Sensors.Inclinometer.getDefault();
-      g && (g.reportInterval = Math.max(g.minimumReportInterval, 16), g.addEventListener("readingchanged", d));
-      document.addEventListener("visibilitychange", function() {
-        document.hidden || document.msHidden ? (f && f.removeEventListener("readingchanged", e), g && g.removeEventListener("readingchanged", d)) : (f && f.addEventListener("readingchanged", e), g && g.addEventListener("readingchanged",
-          d))
-      }, !1)
-    } else window.addEventListener("deviceorientation", function(a) {
-      c.yf = a.alpha || 0;
-      c.zf = a.beta || 0;
-      c.Af = a.gamma || 0
-    }, !1), window.addEventListener("devicemotion", function(a) {
-      a.accelerationIncludingGravity && (c.mr = a.accelerationIncludingGravity.x || 0, c.nr = a.accelerationIncludingGravity.y || 0, c.or = a.accelerationIncludingGravity.z || 0);
-      a.acceleration && (c.Ak = a.acceleration.x || 0, c.Bk = a.acceleration.y || 0, c.Ck = a.acceleration.z || 0)
-    }, !1);
-    this.Tp && !this.e.gb && (
-      canvas.addEventListener("mousemove", function(a) {
-        c.It(a)
-      }),
-      canvas.addEventListener("mousedown", function(a) {
-        c.Ht(a)
-      }),
-      canvas.addEventListener("mouseup", function(a) {
-        c.Jt(a)
-      })
-    );
-    this.e.oj && !this.e.Vb && AppMobi.accelerometer.watchAcceleration(n, {
-      frequency: 40,
-      adjustForRotation: !0
-    });
-    this.e.fo && navigator.accelerometer && navigator.accelerometer.watchAcceleration && navigator.accelerometer.watchAcceleration(h, null, {
-      frequency: 40
-    });
     this.e.ku(this);
     this.enable = 1 == this.u[1];
     this.ro = this.qo = null
@@ -13048,7 +12908,6 @@ function X(n) {
       for (e = a.changedTouches.length; c < e; c++)
         if (d = a.changedTouches[c],
           f = this.lc(d.identifier), 0 <= f) {
-          // var h = this.e.gb ? k : jQuery(this.e.canvas).offset();
           var h = k;
           f = this.touches[f];
           for (f.update(b, d.pageX - h.left, d.pageY - h.top), f = 0; f < g; f++) this.kc[f].iB && this.kc[f].iB(d.identifier, d.pageX - h.left, d.pageY - h.top)
