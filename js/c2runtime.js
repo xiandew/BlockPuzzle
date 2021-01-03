@@ -1894,7 +1894,7 @@ function vc(n, h, d, l) {
       a && (e[a] = b[a]);
     return e
   }
-  var c = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame;
+  var c = requestAnimationFrame;
   d.prototype.RF = function() {
     return this.Co(data);
   };
@@ -2070,7 +2070,7 @@ function vc(n, h, d, l) {
       jQuery(this.zc).css(b)
     }
   };
-  var b = window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame || window.oCancelAnimationFrame;
+  var b = cancelAnimationFrame;
   d.prototype.setSuspended = function(a) {
     var e;
     if (a && !this.wl)
@@ -2382,11 +2382,11 @@ function vc(n, h, d, l) {
             this.yx = this.ta
           } else if (4 === this.ph) {
             this.kD(b);
-            c ? c(function() {
-              a.go()
-            }) : setTimeout(function() {
-              a.go()
-            }, 16);
+            // c ? c(function() {
+            //   a.go()
+            // }) : setTimeout(function() {
+            //   a.go()
+            // }, 16);
             return
           }
         }
