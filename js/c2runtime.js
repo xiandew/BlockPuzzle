@@ -443,7 +443,7 @@ var aa, ba, ca, fa, ga, ha, ia, ja, ka, la, na, oa, pa, qa, ra, sa, ta, ua, va, 
     return 0 === this.count()
   };
   l.prototype.count = function() {
-    return F ? this.Ff.size : this.Dl
+    return F ? this.Ff.size : this.Dl;
   };
   var B = null,
     y = 0;
@@ -4098,6 +4098,7 @@ window.cr_setSuspended = function(n) {
     }
   };
   d.prototype.jD = function(a, e) {
+    // Draw blocks
     var g = a.Qa[0].Zb,
       c = a.Qa[0].index,
       k = this.vd();
@@ -7397,41 +7398,41 @@ function Ac(n) {
       if (a.effects.hasOwnProperty(E))
         for (B =
           a.effects[E], l = 0, h = B.length; l < h; l++) switch (q = B[l].type, v = B[l].params, q) {
-          case "filter":
-            z(E, new m(v[0], v[1], v[2], v[3], v[4], v[5]));
-            break;
-          case "delay":
-            z(E, new k(v[0], v[1], v[2]));
-            break;
-          case "convolve":
-            q = v[2];
-            u = this.Qn(q, !1);
-            u.Va ? q = new c(u.Va, v[0], v[1], q) : (q = new c(null, v[0], v[1], q), u.Zx = v[0], u.wn = q);
-            z(E, q);
-            break;
-          case "flanger":
-            z(E, new b(v[0], v[1], v[2], v[3], v[4]));
-            break;
-          case "phaser":
-            z(E, new e(v[0], v[1], v[2], v[3], v[4], v[5]));
-            break;
-          case "gain":
-            z(E, new g(v[0]));
-            break;
-          case "tremolo":
-            z(E, new p(v[0], v[1]));
-            break;
-          case "ringmod":
-            z(E, new w(v[0], v[1]));
-            break;
-          case "distortion":
-            z(E, new t(v[0], v[1], v[2], v[3], v[4]));
-            break;
-          case "compressor":
-            z(E, new K(v[0], v[1], v[2], v[3], v[4]));
-            break;
-          case "analyser":
-            z(E, new r(v[0], v[1]))
+          // case "filter":
+          //   z(E, new m(v[0], v[1], v[2], v[3], v[4], v[5]));
+          //   break;
+          // case "delay":
+          //   z(E, new k(v[0], v[1], v[2]));
+          //   break;
+          // case "convolve":
+          //   q = v[2];
+          //   u = this.Qn(q, !1);
+          //   u.Va ? q = new c(u.Va, v[0], v[1], q) : (q = new c(null, v[0], v[1], q), u.Zx = v[0], u.wn = q);
+          //   z(E, q);
+          //   break;
+          // case "flanger":
+          //   z(E, new b(v[0], v[1], v[2], v[3], v[4]));
+          //   break;
+          // case "phaser":
+          //   z(E, new e(v[0], v[1], v[2], v[3], v[4], v[5]));
+          //   break;
+          // case "gain":
+          //   z(E, new g(v[0]));
+          //   break;
+          // case "tremolo":
+          //   z(E, new p(v[0], v[1]));
+          //   break;
+          // case "ringmod":
+          //   z(E, new w(v[0], v[1]));
+          //   break;
+          // case "distortion":
+          //   z(E, new t(v[0], v[1], v[2], v[3], v[4]));
+          //   break;
+          // case "compressor":
+          //   z(E, new K(v[0], v[1], v[2], v[3], v[4]));
+          //   break;
+          // case "analyser":
+          //   z(E, new r(v[0], v[1]))
         }
     l = 0;
     for (h = d.length; l < h; l++) 3 === this.zg || (a = d[l], q = a.buffersrc, n = a.is_music, E = a.tag, B = a.playbackTime, y = a.looping, F = a.volume, A = (v = a.pan) && v.hasOwnProperty("objUid") ? v.objUid : -1, n && 1 === this.zg) || !n && 2 === this.zg || ((u = this.Rw(q, E, n, y, F)) ? (u.Ed = a.resume_position, u.du(!!v), u.play(y, F, B), u.Qp(), u.yG(), u.Fn(u.rj ||
@@ -7856,8 +7857,13 @@ function Cc(n) {
 function Dc(n) {
   this.e = n
 }
+
+var i = 0;
+
 (function() {
   function n(a) {
+    // Initialise particles
+    console.log(a, i++);
     this.qb = a;
     this.N = !1;
     this.q = this.speed = this.y = this.x = 0;
@@ -7953,6 +7959,8 @@ function Dc(n) {
   var d = h.H.prototype,
     l = [];
   d.J = function() {
+    // Initialise particle effects
+    // [30, 360, 1, 200, 5, 50, 15, 10, 20, 200, 5, 0, -150, 10, 0, 800, 0, 0, 0.75]
     var a = this.u;
     this.ip = a[0];
     this.Cp = J(a[1]);
@@ -8070,7 +8078,7 @@ function Dc(n) {
     var a = this.e.jj(this),
       f, d, h, k;
     if (0 === this.Xj && this.hu)
-      for (this.xi += a * this.ip, d = sa(this.xi), this.xi -= d, f = 0; f < d; f++) h = this.sr(), h.init();
+      // for (this.xi += a * this.ip, d = sa(this.xi), this.xi -= d, f = 0; f < d; f++) h = this.sr(), h.init();
     this.Ro = this.x;
     this.To = this.y;
     this.So = this.x;

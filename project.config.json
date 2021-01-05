@@ -36,7 +36,7 @@
         "minifyWXSS": true
     },
     "compileType": "game",
-    "libVersion": "1.9.94",
+    "libVersion": "2.14.1",
     "appid": "wx25591101c9703b65",
     "projectname": "BlockPuzzle",
     "simulatorType": "wechat",
