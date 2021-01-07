@@ -10,6 +10,9 @@ export default class MainScene extends Scene {
     preload() {
         this.load.image("tile", "assets/images/tile.png");
         this.load.spritesheet("undo-redo-sheet", "assets/images/undo-redo-sheet.png", { frameWidth: 110, frameHeight: 113 });
+        [...Array(8).keys()].forEach(i => {
+            this.load.image(`particles${i}`, `assets/images/particles${i}.png`);
+        });
     }
 
     create() {
@@ -82,9 +85,35 @@ export default class MainScene extends Scene {
         this.undoBtn.alpha = 0;
         let _this = this;
         this.undoBtn.on("pointerout", function () {
-            // if (this.alpha == 1) {
+            if (this.alpha == 1) {
+                this.chess.getChildren().forEach((block) => {
+                    _this.add.particles(`particles${this.chess.colorIndex}`, null, {
+                        x: block.tile.x,
+                        y: block.tile.y,
+                        angle: { start: 0, end: 360, steps: 12 },
+                        speed: { random: [10, 150] },
+                        quantity: 2,
+                        alpha: { start: 1, end: 0 },
+                        maxParticles: 30,
+                        scale: 0.05
+                    });
 
-            // }
+                    _this.tweens.add({
+                        targets: block,
+                        duration: 400,
+                        displayWidth: { start: block.displayWidth, to: 0 },
+                        displayHeight: { start: block.displayHeight, to: 0 },
+                        ease: "Power2",
+                        onComplete: () => {
+                            block.destroy();
+                            if (!this.chess.countActive()) {
+                                this.chess.container.destroy();
+                            }
+                        }
+                    });
+                });
+                this.setFrame(1);
+            }
         });
 
         this.undoBtn.on("placechess", function (chess) {
@@ -102,6 +131,7 @@ export default class MainScene extends Scene {
 
     update() {
         this.chesses.forEach((chess) => {
+            if (!chess.countActive()) return;
             if (chess.container.body.embedded) chess.container.body.touching.none = false;
             var touching = !chess.container.body.touching.none;
             var wasTouching = !chess.container.body.wasTouching.none;

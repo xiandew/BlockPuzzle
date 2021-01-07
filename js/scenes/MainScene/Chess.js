@@ -4,11 +4,10 @@ import Phaser from "../../libs/phaser-full.min";
 export default class Chess extends Phaser.Physics.Arcade.Group {
     constructor(scene, x, y) {
         super(scene.physics.world, scene);
-        scene.add.existing(this);
-
         const origin = { x, y };
         const pattern = randomChoice(patterns);
-        const color = randomChoice(colors);
+        const { color, colorIndex } = randomChoice(colors.map((color, colorIndex) => { return { color, colorIndex }; }));
+        this.colorIndex = colorIndex;
         this.container = scene.add.container(x, y);
         this.container.setSize(
             pattern.binRepr.length * scene.tileSize,
@@ -73,7 +72,7 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         });
 
         let _this = this;
-        this.container.on("dragend", function (pointer, dragX, dragY) {
+        this.container.on("dragend", function () {
             this.dragging = false;
 
             if (this.list.every((block) => !!block.tile && !block.tile.block) &&
