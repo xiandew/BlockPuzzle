@@ -28,7 +28,9 @@ export default class MainScene extends Scene {
         let startX = this.boardCentre.x + (-nCols * 0.5 + 0.5) * this.tileSize;
         let startY = this.boardCentre.y + (-nRows * 0.5 + 0.5) * this.tileSize;
         this.tiles = this.physics.add.staticGroup();
+        this.board = [];
         for (let i = 0; i < nRows; i++) {
+            this.board.push([]);
             for (let j = 0; j < nCols; j++) {
                 let tile = this.add.image(
                     startX + i * this.tileSize,
@@ -39,6 +41,7 @@ export default class MainScene extends Scene {
                 tile.displayWidth = tile.displayHeight = this.tileSize - this.tilePadding;
                 tile.setTint(0xe5e5e5);
                 this.tiles.add(tile);
+                this.board[i].push(tile);
             }
         }
 
@@ -55,33 +58,7 @@ export default class MainScene extends Scene {
         let _this = this;
         this.undoBtn.on("pointerout", function () {
             if (this.alpha == 1) {
-                this.chess.getChildren().forEach((block) => {
-                    _this.add.particles(`particles${this.chess.colorIndex}`, null, {
-                        x: block.tile.x,
-                        y: block.tile.y,
-                        angle: { start: 0, end: 360, steps: 12 },
-                        speed: { random: [10, 150] },
-                        quantity: 2,
-                        alpha: { start: 1, end: 0 },
-                        maxParticles: 30,
-                        scale: 0.05
-                    });
 
-                    _this.tweens.add({
-                        targets: block,
-                        duration: 400,
-                        displayWidth: { start: block.displayWidth, to: 0 },
-                        displayHeight: { start: block.displayHeight, to: 0 },
-                        ease: "Power2",
-                        onComplete: () => {
-                            block.destroy();
-                            if (!this.chess.countActive()) {
-                                this.chess.container.destroy();
-                                _this.chesses.splice(_this.chesses.indexOf(this.chess), 1);
-                            }
-                        }
-                    });
-                });
                 this.setFrame(1);
             }
         });
@@ -143,6 +120,37 @@ export default class MainScene extends Scene {
             });
 
             this.physics.add.overlap(chess.container, this.tiles);
+        });
+    }
+
+    score(row) {
+        row.map((tile) => tile.block).forEach((block, i) => {
+            if (!block) {
+                return;
+            }
+
+            this.add.particles(`particles${block.colorIndex}`, null, {
+                x: block.x,
+                y: block.y,
+                angle: { start: 0, end: 360, steps: 12 },
+                speed: { random: [10, 150] },
+                quantity: 2,
+                alpha: { start: 1, end: 0 },
+                maxParticles: 30,
+                scale: 0.05
+            });
+
+            this.tweens.add({
+                targets: block,
+                duration: 400,
+                displayWidth: { start: block.displayWidth, to: 0 },
+                displayHeight: { start: block.displayHeight, to: 0 },
+                ease: "Power2",
+                onComplete: () => {
+                    block.destroy();
+                    row[i].block = null;
+                }
+            });
         });
     }
 }

@@ -15,7 +15,6 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         };
         const pattern = randomChoice(patterns);
         const { color, colorIndex } = randomChoice(colors.map((color, colorIndex) => { return { color, colorIndex }; }));
-        this.colorIndex = colorIndex;
         this.container = scene.add.container(
             origin.x + dx * (scene.cameras.main.width * 0.5 - margin.x),
             origin.y
@@ -89,8 +88,34 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
 
             if (this.list.every((block) => !!block.tile && !block.tile.block) &&
                 this.list.map((block) => block.indexRepr.map((e, i) => e - block.tile.indexRepr[i]).join(",")).every((v, i, a) => v === a[0])) {
-                this.list.forEach((block) => block.tile.block = block);
                 scene.undoBtn.emit("placechess", _this);
+
+                this.list.forEach((block) => {
+                    block.tile.block = scene.add.image(
+                        block.tile.x,
+                        block.tile.y,
+                        "tile"
+                    );
+                    block.tile.block.displayWidth = block.tile.displayWidth;
+                    block.tile.block.displayHeight = block.tile.displayHeight;
+                    block.tile.block.setTint(color);
+                    block.tile.block.colorIndex = colorIndex;
+                });
+
+                this.destroy();
+                scene.chesses.splice(scene.chesses.indexOf(_this), 1);
+
+                scene.board.reduce((matches, row, i) => {
+                    return matches.concat([match(row), match(scene.board.map((row) => row[i]))]);
+
+                    function match(row) {
+                        if (row.every((tile) => tile.block)) {
+                            return row;
+                        }
+                        return null
+                    }
+                }, []).forEach((match) => match && scene.score(match));
+
                 return;
             }
 
@@ -107,9 +132,9 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
 
         scene.tweens.add({
             targets: this.container,
-            x: {start: this.container.x, to: origin.x},
+            x: { start: this.container.x, to: origin.x },
             y: origin.y,
-            alpha: {start: 0, to: 1},
+            alpha: { start: 0, to: 1 },
             duration: 400,
             ease: "Power2"
         });
