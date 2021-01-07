@@ -1,10 +1,10 @@
 import Scene from "./Scene";
 import Chess from "./MainScene/Chess";
+import Board from "./MainScene/Board";
 
 export default class MainScene extends Scene {
     constructor() {
         super("MainScene");
-        this.tilePadding = 3;
     }
 
     preload() {
@@ -18,38 +18,12 @@ export default class MainScene extends Scene {
     create() {
         this.cameras.main.setBackgroundColor(0xffffff);
 
-        let nRows = 10, nCols = 10;
-        let boardMargin = 0.1 * this.cameras.main.width;
-        this.boardCentre = {
-            x: this.cameras.main.centerX,
-            y: this.cameras.main.centerY
-        }
-        this.tileSize = (this.cameras.main.width - 2 * boardMargin) / nCols;
-        let startX = this.boardCentre.x + (-nCols * 0.5 + 0.5) * this.tileSize;
-        let startY = this.boardCentre.y + (-nRows * 0.5 + 0.5) * this.tileSize;
-        this.tiles = this.physics.add.staticGroup();
-        this.board = [];
-        for (let i = 0; i < nRows; i++) {
-            this.board.push([]);
-            for (let j = 0; j < nCols; j++) {
-                let tile = this.add.image(
-                    startX + i * this.tileSize,
-                    startY + j * this.tileSize,
-                    "tile"
-                );
-                tile.indexRepr = [i, j];
-                tile.displayWidth = tile.displayHeight = this.tileSize - this.tilePadding;
-                tile.setTint(0xe5e5e5);
-                this.tiles.add(tile);
-                this.board[i].push(tile);
-            }
-        }
-
+        this.board = new Board(this);
         this.loadChesses();
 
         this.undoBtn = this.add.sprite(
-            boardMargin,
-            boardMargin,
+            this.board.margin,
+            this.board.margin,
             "undo-redo-sheet", 0
         ).setInteractive();
         this.undoBtn.displayWidth = 0.06 * this.cameras.main.width;
@@ -96,12 +70,12 @@ export default class MainScene extends Scene {
         });
 
         this.chesses.forEach((chess) => {
-            this.physics.add.overlap(chess, this.tiles, function (block, tile) {
+            this.physics.add.overlap(chess, this.board, function (block, tile) {
                 let d = Math.sqrt(
                     Math.pow(block.parentContainer.x + block.x - tile.x, 2) +
                     Math.pow(block.parentContainer.y + block.y - tile.y, 2)
                 );
-                if (d < this.tileSize * 0.5) {
+                if (d < this.board.tileCTCD * 0.5) {
                     block.parentContainer.setPosition(
                         tile.x - block.x,
                         tile.y - block.y
@@ -118,7 +92,7 @@ export default class MainScene extends Scene {
                 chess.container.list.forEach((block) => block.tile = null);
             });
 
-            this.physics.add.overlap(chess.container, this.tiles);
+            this.physics.add.overlap(chess.container, this.board);
         });
     }
 

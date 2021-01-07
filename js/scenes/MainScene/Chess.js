@@ -6,12 +6,12 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         super(scene.physics.world, scene);
 
         const margin = {
-            x: 2.5 * scene.tileSize,
-            y: 7.5 * scene.tileSize
+            x: 2.5 * scene.board.tileCTCD,
+            y: 7.5 * scene.board.tileCTCD
         }
         const origin = {
-            x: scene.boardCentre.x + dx * margin.x,
-            y: scene.boardCentre.y + dy * margin.y
+            x: scene.board.centre.x + dx * margin.x,
+            y: scene.board.centre.y + dy * margin.y
         };
         const pattern = randomChoice(patterns);
         const { color, colorIndex } = randomChoice(colors.map((color, colorIndex) => { return { color, colorIndex }; }));
@@ -21,8 +21,8 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         );
         this.container.alpha = 0;
         this.container.setSize(
-            pattern.binRepr.length * scene.tileSize,
-            pattern.binRepr[0].length * scene.tileSize
+            pattern.binRepr.length * scene.board.tileCTCD,
+            pattern.binRepr[0].length * scene.board.tileCTCD
         );
         scene.physics.world.enable(this.container);
 
@@ -39,12 +39,12 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         this.container.add(
             pattern.indexRepr.map((blockIdxRepr) => {
                 let block = scene.add.image(
-                    (blockIdxRepr[0] - this.offset[0]) * scene.tileSize,
-                    (blockIdxRepr[1] - this.offset[1]) * scene.tileSize,
+                    (blockIdxRepr[0] - this.offset[0]) * scene.board.tileCTCD,
+                    (blockIdxRepr[1] - this.offset[1]) * scene.board.tileCTCD,
                     "tile"
                 );
                 block.indexRepr = blockIdxRepr;
-                block.displayWidth = block.displayHeight = scene.tileSize - scene.tilePadding;
+                block.displayWidth = block.displayHeight = scene.board.tileSize;
                 block.setTint(color);
                 return block;
             })
@@ -63,13 +63,13 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
                 this.y = dragY;
             } else {
                 const draggedX = dragX - this.x;
-                const deltaX = median([-scene.tileSize, draggedX, scene.tileSize]);
+                const deltaX = median([-scene.board.tileCTCD, draggedX, scene.board.tileCTCD]);
                 if (deltaX != draggedX) {
                     this.setX(this.x + deltaX);
                 }
 
                 const draggedY = dragY - this.y;
-                const deltaY = median([-scene.tileSize, draggedY, scene.tileSize]);
+                const deltaY = median([-scene.board.tileCTCD, draggedY, scene.board.tileCTCD]);
                 if (deltaY != draggedY) {
                     this.setY(this.y + deltaY);
                 }
@@ -105,8 +105,8 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
                 scene.chesses.splice(scene.chesses.indexOf(_this), 1);
                 scene.undoBtn.emit("placechess", _this);
 
-                scene.board.reduce((matches, row, i) => {
-                    return matches.concat([match(row), match(scene.board.map((row) => row[i]))]);
+                scene.board.tiles.reduce((matches, row, i) => {
+                    return matches.concat([match(row), match(scene.board.tiles.map((row) => row[i]))]);
 
                     function match(row) {
                         if (row.every((tile) => tile.block)) {
