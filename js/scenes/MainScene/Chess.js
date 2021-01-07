@@ -88,7 +88,6 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
 
             if (this.list.every((block) => !!block.tile && !block.tile.block) &&
                 this.list.map((block) => block.indexRepr.map((e, i) => e - block.tile.indexRepr[i]).join(",")).every((v, i, a) => v === a[0])) {
-                scene.undoBtn.emit("placechess", _this);
 
                 this.list.forEach((block) => {
                     block.tile.block = scene.add.image(
@@ -104,6 +103,7 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
 
                 this.destroy();
                 scene.chesses.splice(scene.chesses.indexOf(_this), 1);
+                scene.undoBtn.emit("placechess", _this);
 
                 scene.board.reduce((matches, row, i) => {
                     return matches.concat([match(row), match(scene.board.map((row) => row[i]))]);

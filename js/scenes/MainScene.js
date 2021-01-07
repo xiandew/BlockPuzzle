@@ -72,10 +72,9 @@ export default class MainScene extends Scene {
                     ease: "Power2"
                 });
             }
-            chess.placed = true;
             this.chess = chess;
 
-            if (_this.chesses.every(chess => chess.placed)) {
+            if (!_this.chesses.length) {
                 _this.loadChesses();
             }
         });
