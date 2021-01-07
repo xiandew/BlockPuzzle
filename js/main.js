@@ -14,8 +14,7 @@ export default class Main extends Phaser.Game {
             physics: {
                 default: "arcade",
                 arcade: {
-                    fps: 100,
-                    gravity: { y: 300 }
+                    debug: true
                 }
             },
             scale: {
@@ -25,7 +24,7 @@ export default class Main extends Phaser.Game {
             input: {
                 touch: true
             },
-            scene: MainScene
+            scene: MainScene,
         });
     }
 }

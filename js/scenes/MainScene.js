@@ -1,5 +1,5 @@
 import Scene from "./Scene";
-import Block from "./MainScene/Block";
+import Chess from "./MainScene/Chess";
 
 export default class MainScene extends Scene {
     constructor() {
@@ -9,29 +9,104 @@ export default class MainScene extends Scene {
 
     preload() {
         this.load.image("tile", "assets/images/tile.png");
+        this.load.spritesheet("undo-redo-sheet", "assets/images/undo-redo-sheet.png", { frameWidth: 110, frameHeight: 113 });
     }
 
     create() {
         this.cameras.main.setBackgroundColor(0xffffff);
 
-        let board = this.physics.add.staticGroup();
+        let nRows = 10, nCols = 10;
         let boardMargin = 0.1 * this.cameras.main.width;
-        this.tileSize = (this.cameras.main.width - 2 * boardMargin) * 0.1;
-        let startX = this.cameras.main.centerX - 4.5 * this.tileSize;
-        let startY = this.cameras.main.centerY - 4.5 * this.tileSize;
-        for (let i = 0; i < 100; i++) {
-            let tile = board.create(
-                startX + (i % 10) * this.tileSize,
-                startY + Math.floor(i / 10) * this.tileSize,
-                "tile"
-            );
-            tile.displayWidth = tile.displayHeight = this.tileSize - this.tilePadding;
-            tile.setTint(0xe5e5e5);
+        let boardCentre = {
+            x: this.cameras.main.centerX,
+            y: this.cameras.main.centerY
+        }
+        this.tileSize = (this.cameras.main.width - 2 * boardMargin) / nCols;
+        let startX = boardCentre.x + (-nCols * 0.5 + 0.5) * this.tileSize;
+        let startY = boardCentre.y + (-nRows * 0.5 + 0.5) * this.tileSize;
+        let tiles = this.physics.add.staticGroup();
+        for (let i = 0; i < nRows; i++) {
+            for (let j = 0; j < nCols; j++) {
+                let tile = this.add.image(
+                    startX + i * this.tileSize,
+                    startY + j * this.tileSize,
+                    "tile"
+                );
+                tile.indexRepr = [i, j];
+                tile.displayWidth = tile.displayHeight = this.tileSize - this.tilePadding;
+                tile.setTint(0xe5e5e5);
+                tiles.add(tile);
+            }
         }
 
-        [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([x, y]) => [
-            this.cameras.main.centerX + 2.5 * x * this.tileSize,
-            this.cameras.main.centerY + 7.5 * y * this.tileSize
-        ]).forEach((p) => new Block(p, this));
+        this.chesses = [[-1, -1], [1, -1], [-1, 1], [1, 1]].reverse().map(([x, y]) => [
+            boardCentre.x + 2.5 * x * this.tileSize,
+            boardCentre.y + 7.5 * y * this.tileSize
+        ]).map(([x, y]) => {
+            return new Chess(this, x, y);
+        });
+
+        this.chesses.forEach((chess) => {
+            this.physics.add.overlap(chess, tiles, function (block, tile) {
+                let d = Math.sqrt(
+                    Math.pow(block.parentContainer.x + block.x - tile.x, 2) +
+                    Math.pow(block.parentContainer.y + block.y - tile.y, 2)
+                );
+                if (d < this.tileSize * 0.5) {
+                    block.parentContainer.setPosition(
+                        tile.x - block.x,
+                        tile.y - block.y
+                    );
+                    block.parentContainer.onBoard = true;
+                }
+            }, function (block, tile) {
+                block.tile = tile;
+                return block.parentContainer.dragging && !block.parentContainer.onBoard;
+            }, this);
+
+            chess.on("overlapend", function (chess) {
+                chess.container.onBoard = false;
+                chess.container.list.forEach((block) => block.tile = null);
+            });
+
+            this.physics.add.overlap(chess.container, tiles);
+        });
+
+        this.undoBtn = this.add.sprite(
+            boardMargin,
+            boardMargin,
+            "undo-redo-sheet", 0
+        ).setInteractive();
+        this.undoBtn.displayWidth = 0.06 * this.cameras.main.width;
+        this.undoBtn.displayHeight = this.autoDisplayHeight(this.undoBtn);
+        this.undoBtn.alpha = 0;
+        let _this = this;
+        this.undoBtn.on("pointerout", function () {
+            // if (this.alpha == 1) {
+
+            // }
+        });
+
+        this.undoBtn.on("placechess", function (chess) {
+            if (this.alpha != 1) {
+                _this.tweens.add({
+                    targets: this,
+                    alpha: 1,
+                    duration: 300,
+                    ease: 'Power2'
+                });
+            }
+            this.chess = chess;
+        });
+    }
+
+    update() {
+        this.chesses.forEach((chess) => {
+            if (chess.container.body.embedded) chess.container.body.touching.none = false;
+            var touching = !chess.container.body.touching.none;
+            var wasTouching = !chess.container.body.wasTouching.none;
+
+            if (!touching && wasTouching) chess.emit("overlapend", chess);
+        });
     }
 }
