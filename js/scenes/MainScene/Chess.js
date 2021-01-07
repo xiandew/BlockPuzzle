@@ -2,13 +2,25 @@ import Phaser from "../../libs/phaser-full.min";
 
 
 export default class Chess extends Phaser.Physics.Arcade.Group {
-    constructor(scene, x, y) {
+    constructor(scene, dx, dy) {
         super(scene.physics.world, scene);
-        const origin = { x, y };
+
+        const margin = {
+            x: 2.5 * scene.tileSize,
+            y: 7.5 * scene.tileSize
+        }
+        const origin = {
+            x: scene.boardCentre.x + dx * margin.x,
+            y: scene.boardCentre.y + dy * margin.y
+        };
         const pattern = randomChoice(patterns);
         const { color, colorIndex } = randomChoice(colors.map((color, colorIndex) => { return { color, colorIndex }; }));
         this.colorIndex = colorIndex;
-        this.container = scene.add.container(x, y);
+        this.container = scene.add.container(
+            origin.x + dx * (scene.cameras.main.width * 0.5 - margin.x),
+            origin.y
+        );
+        this.container.alpha = 0;
         this.container.setSize(
             pattern.binRepr.length * scene.tileSize,
             pattern.binRepr[0].length * scene.tileSize
@@ -89,8 +101,17 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
                 x: origin.x,
                 y: origin.y,
                 duration: 400,
-                ease: 'Power2'
+                ease: "Power2"
             });
+        });
+
+        scene.tweens.add({
+            targets: this.container,
+            x: {start: this.container.x, to: origin.x},
+            y: origin.y,
+            alpha: {start: 0, to: 1},
+            duration: 400,
+            ease: "Power2"
         });
     }
 }

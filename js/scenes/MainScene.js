@@ -20,14 +20,14 @@ export default class MainScene extends Scene {
 
         let nRows = 10, nCols = 10;
         let boardMargin = 0.1 * this.cameras.main.width;
-        let boardCentre = {
+        this.boardCentre = {
             x: this.cameras.main.centerX,
             y: this.cameras.main.centerY
         }
         this.tileSize = (this.cameras.main.width - 2 * boardMargin) / nCols;
-        let startX = boardCentre.x + (-nCols * 0.5 + 0.5) * this.tileSize;
-        let startY = boardCentre.y + (-nRows * 0.5 + 0.5) * this.tileSize;
-        let tiles = this.physics.add.staticGroup();
+        let startX = this.boardCentre.x + (-nCols * 0.5 + 0.5) * this.tileSize;
+        let startY = this.boardCentre.y + (-nRows * 0.5 + 0.5) * this.tileSize;
+        this.tiles = this.physics.add.staticGroup();
         for (let i = 0; i < nRows; i++) {
             for (let j = 0; j < nCols; j++) {
                 let tile = this.add.image(
@@ -38,42 +38,11 @@ export default class MainScene extends Scene {
                 tile.indexRepr = [i, j];
                 tile.displayWidth = tile.displayHeight = this.tileSize - this.tilePadding;
                 tile.setTint(0xe5e5e5);
-                tiles.add(tile);
+                this.tiles.add(tile);
             }
         }
 
-        this.chesses = [[-1, -1], [1, -1], [-1, 1], [1, 1]].reverse().map(([x, y]) => [
-            boardCentre.x + 2.5 * x * this.tileSize,
-            boardCentre.y + 7.5 * y * this.tileSize
-        ]).map(([x, y]) => {
-            return new Chess(this, x, y);
-        });
-
-        this.chesses.forEach((chess) => {
-            this.physics.add.overlap(chess, tiles, function (block, tile) {
-                let d = Math.sqrt(
-                    Math.pow(block.parentContainer.x + block.x - tile.x, 2) +
-                    Math.pow(block.parentContainer.y + block.y - tile.y, 2)
-                );
-                if (d < this.tileSize * 0.5) {
-                    block.parentContainer.setPosition(
-                        tile.x - block.x,
-                        tile.y - block.y
-                    );
-                    block.parentContainer.onBoard = true;
-                }
-            }, function (block, tile) {
-                block.tile = tile;
-                return block.parentContainer.dragging && !block.parentContainer.onBoard;
-            }, this);
-
-            chess.on("overlapend", function (chess) {
-                chess.container.onBoard = false;
-                chess.container.list.forEach((block) => block.tile = null);
-            });
-
-            this.physics.add.overlap(chess.container, tiles);
-        });
+        this.loadChesses();
 
         this.undoBtn = this.add.sprite(
             boardMargin,
@@ -108,6 +77,7 @@ export default class MainScene extends Scene {
                             block.destroy();
                             if (!this.chess.countActive()) {
                                 this.chess.container.destroy();
+                                _this.chesses.splice(_this.chesses.indexOf(this.chess), 1);
                             }
                         }
                     });
@@ -122,21 +92,57 @@ export default class MainScene extends Scene {
                     targets: this,
                     alpha: 1,
                     duration: 300,
-                    ease: 'Power2'
+                    ease: "Power2"
                 });
             }
+            chess.placed = true;
             this.chess = chess;
+
+            if (_this.chesses.every(chess => chess.placed)) {
+                _this.loadChesses();
+            }
         });
     }
 
     update() {
         this.chesses.forEach((chess) => {
-            if (!chess.countActive()) return;
             if (chess.container.body.embedded) chess.container.body.touching.none = false;
             var touching = !chess.container.body.touching.none;
             var wasTouching = !chess.container.body.wasTouching.none;
 
             if (!touching && wasTouching) chess.emit("overlapend", chess);
+        });
+    }
+
+    loadChesses() {
+        this.chesses = [[-1, -1], [1, -1], [-1, 1], [1, 1]].reverse().map(([dx, dy]) => {
+            return new Chess(this, dx, dy);
+        });
+
+        this.chesses.forEach((chess) => {
+            this.physics.add.overlap(chess, this.tiles, function (block, tile) {
+                let d = Math.sqrt(
+                    Math.pow(block.parentContainer.x + block.x - tile.x, 2) +
+                    Math.pow(block.parentContainer.y + block.y - tile.y, 2)
+                );
+                if (d < this.tileSize * 0.5) {
+                    block.parentContainer.setPosition(
+                        tile.x - block.x,
+                        tile.y - block.y
+                    );
+                    block.parentContainer.onBoard = true;
+                }
+            }, function (block, tile) {
+                block.tile = tile;
+                return block.parentContainer.dragging && !block.parentContainer.onBoard;
+            }, this);
+
+            chess.on("overlapend", function (chess) {
+                chess.container.onBoard = false;
+                chess.container.list.forEach((block) => block.tile = null);
+            });
+
+            this.physics.add.overlap(chess.container, this.tiles);
         });
     }
 }
