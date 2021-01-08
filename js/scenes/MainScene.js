@@ -13,6 +13,13 @@ export default class MainScene extends Scene {
         [...Array(8).keys()].forEach(i => {
             this.load.image(`particles${i}`, `assets/images/particles${i}.png`);
         });
+
+        this.load.image("best-score", "assets/images/best-score.png");
+        this.load.bitmapFont(
+            "basic-square-7-solid",
+            "assets/fonts/bitmap/basic-square-7-solid_0.png",
+            "assets/fonts/bitmap/basic-square-7-solid.xml"
+        );
     }
 
     create() {
@@ -33,28 +40,24 @@ export default class MainScene extends Scene {
         let _this = this;
         this.undoBtn.on("pointerout", function () {
             if (this.alpha == 1) {
-                if (!this.frame.name) {
-                    if (!this.chess) {
-                        return;
-                    }
-
-                    if (_this.chesses.length == Chess.directions.length) {
-                        _this.chesses.forEach((chess) => chess.exit());
-                    }
-
-                    this.chess.container.list.forEach((block) => {
-                        block.tile.block.destroy();
-                        block.tile.block = null;
-                    });
-                    this.chess.container.setVisible(true);
-                    this.chess.moveToOrigin();
-
-                    _this.chesses.push(this.chess);
-                    this.chess = null;
-                    this.setFrame(1);
-                } else {
-                    this.setFrame(0);
+                if (!this.chess) {
+                    return;
                 }
+
+                if (_this.chesses.length == Chess.directions.length) {
+                    _this.chesses.forEach((chess) => chess.exit());
+                }
+
+                this.chess.container.list.forEach((block) => {
+                    block.tile.block.destroy();
+                    block.tile.block = null;
+                });
+                this.chess.container.setVisible(true);
+                this.chess.moveToOrigin();
+
+                _this.chesses.push(this.chess);
+                this.chess = null;
+                this.setTint(0xe5e5e5);
             }
         });
 
@@ -89,6 +92,30 @@ export default class MainScene extends Scene {
                 _this.chesses.forEach((chess) => chess.enter());
             }
         });
+
+        this.bestScoreIcon = this.add.image(
+            this.board.centre.x,
+            this.board.margin,
+            "best-score"
+        );
+        this.bestScoreIcon.displayWidth = this.undoBtn.displayWidth;
+        this.bestScoreIcon.displayHeight = this.autoDisplayHeight(this.bestScoreIcon);
+
+        this.currentScore = this.add.bitmapText(
+            this.board.centre.x - this.bestScoreIcon.displayWidth,
+            this.board.margin,
+            "basic-square-7-solid",
+            "0", 0.05 * this.cameras.main.width
+        ).setOrigin(1, 0.5);
+        this.currentScore.value = 0;
+
+        this.bestScore = this.add.bitmapText(
+            this.board.centre.x + this.bestScoreIcon.displayWidth,
+            this.board.margin,
+            "basic-square-7-solid",
+            "0", 0.05 * this.cameras.main.width
+        ).setOrigin(0, 0.5);
+        this.bestScore.value = 0;
     }
 
     update() {
@@ -134,6 +161,14 @@ export default class MainScene extends Scene {
     }
 
     score(row) {
+        this.currentScore.value += row.length;
+        this.currentScore.text = this.currentScore.value.toString();
+
+        if (this.currentScore.value > this.bestScore.value) {
+            this.bestScore.value = this.currentScore.value;
+            this.bestScore.text = this.currentScore.text;
+        }
+
         row.map((tile) => tile.block).forEach((block, i) => {
             if (!block) {
                 return;
