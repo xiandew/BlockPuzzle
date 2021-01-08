@@ -133,7 +133,7 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
                 matches.forEach((match) => scene.score(match));
                 scene.undoBtn.emit("placechess", matches.length ? (this.destroy(), null) : _this);
 
-                return scene.audio.placeChess.play();
+                return scene.audio.playPlaceChess();
             }
 
             this.onBoard = false;

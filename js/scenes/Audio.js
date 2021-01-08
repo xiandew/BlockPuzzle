@@ -5,6 +5,9 @@ export default class Audio {
         this.bgm.autoplay = true;
         this.bgm.src = "assets/media/background.m4a";
 
+        this.bgmOn = true;
+        this.musicOn = true;
+
         this.navTap = wx.createInnerAudioContext();
         this.navTap.src = "assets/media/navtap.m4a";
         this.navTapOn = true;
@@ -17,11 +20,29 @@ export default class Audio {
     }
 
     addNavTap(button) {
-        button.on("pointerout", function() {
-            if (this.navTapOn) {
+        button.on("pointerout", () => {
+            if (this.musicOn) {
                 this.navTap.play();
             }
         });
+    }
+
+    playBGM() {
+        this.bgm.play();
+        this.bgmOn = true;
+    }
+
+    stopBGM() {
+        this.bgm.stop();
+        this.bgmOn = false;
+    }
+
+    playMatch() {
+        if (this.musicOn) this.match.play();
+    }
+
+    playPlaceChess() {
+        if (this.musicOn) this.placeChess.play();
     }
 
     static getInstance() {

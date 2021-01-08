@@ -95,13 +95,19 @@ export default class MainScene extends Scene {
             }
         });
 
-        this.homeBtn = this.add.image(
+        let homeBtn = this.add.image(
             this.board.margin,
             this.cameras.main.height - this.board.margin,
             "home-btn"
         ).setInteractive();
-        this.homeBtn.displayWidth = 0.06 * this.cameras.main.width;
-        this.homeBtn.displayHeight = this.autoDisplayHeight(this.homeBtn);
+        homeBtn.displayWidth = 0.06 * this.cameras.main.width;
+        homeBtn.displayHeight = this.autoDisplayHeight(homeBtn);
+        homeBtn.on("pointerout", () => {
+            this.scene.setVisible(false);
+            this.scene.launch("HomeScene", { fromMainScene: true });
+        });
+
+        this.audio.addNavTap(homeBtn);
 
         this.bestScoreIcon = this.add.image(
             this.board.centre.x,
@@ -171,7 +177,7 @@ export default class MainScene extends Scene {
     }
 
     score(row) {
-        this.audio.match.play();
+        this.audio.playMatch();
         this.currentScore.value += row.length;
         this.currentScore.text = this.currentScore.value.toString();
 

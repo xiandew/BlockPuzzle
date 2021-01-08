@@ -7,6 +7,10 @@ export default class HomeScene extends Scene {
         this.audio = Audio.getInstance();
     }
 
+    init(data) {
+        this.fromMainScene = data.fromMainScene;
+    }
+
     preload() {
         [
             ["logo", "assets/images/logo.png"],
@@ -38,23 +42,31 @@ export default class HomeScene extends Scene {
         ).setInteractive();
         startBtn.displayWidth = 0.6 * this.cameras.main.width;
         startBtn.displayHeight = this.autoDisplayHeight(startBtn);
+        startBtn.on("pointerout", () => {
+            if (this.fromMainScene) {
+                this.scene.stop();
+                this.scene.setVisible(true, "MainScene");
+            } else {
+                this.scene.start("MainScene");
+            }
+        });
         buttons.push(startBtn);
 
         let soundBtn = this.add.sprite(
             0.4 * this.cameras.main.width,
             0.75 * this.cameras.main.height,
-            "sound-sheet", 0
+            "sound-sheet", this.audio.bgmOn ? 0 : 1
         ).setInteractive();
         soundBtn.displayWidth = 0.15 * startBtn.displayWidth;
         soundBtn.displayHeight = this.autoDisplayHeight(soundBtn);
         let _this = this;
         soundBtn.on("pointerout", function () {
-            if (_this.audio.bgm.paused) {
-                this.setFrame(0);
-                _this.audio.bgm.play();
-            } else {
+            if (_this.audio.bgmOn) {
                 this.setFrame(1);
-                _this.audio.bgm.stop();
+                _this.audio.stopBGM();
+            } else {
+                this.setFrame(0);
+                _this.audio.playBGM();
             }
         });
         buttons.push(soundBtn);
@@ -62,16 +74,16 @@ export default class HomeScene extends Scene {
         let musicBtn = this.add.sprite(
             0.6 * this.cameras.main.width,
             0.75 * this.cameras.main.height,
-            "music-sheet", 0
+            "music-sheet", this.audio.musicOn ? 0 : 1
         ).setInteractive();
         musicBtn.displayWidth = 0.15 * startBtn.displayWidth;
         musicBtn.displayHeight = this.autoDisplayHeight(musicBtn);
         musicBtn.on("pointerdown", function () {
-            if (_this.audio.navTapOn) {
-                _this.navTapOn = false;
+            if (_this.audio.musicOn) {
+                _this.audio.musicOn = false;
                 this.setFrame(1);
             } else {
-                _this.navTapOn = true;
+                _this.audio.musicOn = true;
                 this.setFrame(0);
             }
         });

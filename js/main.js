@@ -24,7 +24,7 @@ export default class Main extends Phaser.Game {
             input: {
                 touch: true
             },
-            scene: MainScene,
+            scene: [HomeScene, MainScene],
         });
     }
 }
