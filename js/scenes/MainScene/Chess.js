@@ -1,7 +1,94 @@
 import Phaser from "../../libs/phaser-full.min";
+import UCB from "./utils/UCB";
 
+const patterns = [
+    [
+        [0, 1, 0],
+        [1, 1, 1]
+    ], [
+        [1, 0, 0],
+        [1, 1, 1]
+    ], [
+        [1, 1, 0],
+        [0, 1, 1]
+    ], [
+        [1, 1],
+        [1, 1]
+    ], [
+        [1, 1, 1]
+    ], [
+        [1]
+    ], [
+        [1, 0, 0],
+        [1, 0, 0],
+        [1, 1, 1]
+    ], [
+        [1, 0],
+        [1, 1]
+    ], [
+        [1, 1]
+    ]
+].reduce((patterns, pattern) => {
+    function rotateRight(matrix) {
+        let rotated = [];
+        matrix.forEach(function (row, i) {
+            row.forEach(function (col, j) {
+                rotated[row.length - j - 1] = rotated[row.length - j - 1] || [];
+                rotated[row.length - j - 1][i] = col;
+            });
+        });
+        return rotated;
+    }
+
+    function toString(matrix) {
+        return matrix.map(row => row.join("")).join(",");
+    }
+
+    let rotate90 = rotateRight(pattern);
+    let rotate180 = rotateRight(rotate90);
+    let rotate270 = rotateRight(rotate180);
+    [pattern, rotate90, rotate180, rotate270].forEach((pattern) => {
+        if (!patterns.map((pattern) => toString(pattern)).includes(toString(pattern))) {
+            patterns.push(pattern);
+        }
+    });
+
+    return patterns;
+}, []).map((binRepr) => {
+    let indexRepr = [];
+    let indexOffset;
+    binRepr.forEach((row, i) => {
+        row.forEach((col, j) => {
+            if (col) {
+                if (!indexRepr.length) {
+                    indexOffset = [i, j];
+                    indexRepr.push([0, 0]);
+                } else {
+                    indexRepr.push([i - indexOffset[0], j - indexOffset[1]]);
+                }
+            }
+        })
+    });
+    return {
+        binRepr,
+        indexRepr
+    };
+});
+
+const colors = [
+    0xffc500,
+    0xf27e00,
+    0x91088c,
+    0x00ff06,
+    0xeb4e4e,
+    0xcef900,
+    0x51acdc,
+    0xf544de
+];
 
 export default class Chess extends Phaser.Physics.Arcade.Group {
+    static ucb = new UCB(patterns.length);
+
     constructor(scene, dx, dy) {
         super(scene.physics.world, scene);
 
@@ -13,8 +100,12 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
             x: scene.board.centre.x + dx * margin.x,
             y: scene.board.centre.y + dy * margin.y
         };
-        const pattern = randomChoice(patterns);
-        const { color, colorIndex } = randomChoice(colors.map((color, colorIndex) => { return { color, colorIndex }; }));
+
+        const patternIndex = Chess.ucb.play();
+        Chess.ucb.update(patternIndex, 0);
+        const pattern = patterns[patternIndex];
+
+        const { color, colorIndex } = UCB.randomChoice(colors.map((color, colorIndex) => { return { color, colorIndex }; }));
         this.container = scene.add.container(
             origin.x + dx * (scene.cameras.main.width * 0.5 - margin.x),
             origin.y
@@ -139,93 +230,4 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
             ease: "Power2"
         });
     }
-}
-
-const patterns = [
-    [
-        [0, 1, 0],
-        [1, 1, 1]
-    ], [
-        [1, 0, 0],
-        [1, 1, 1]
-    ], [
-        [1, 1, 0],
-        [0, 1, 1]
-    ], [
-        [1, 1],
-        [1, 1]
-    ], [
-        [1, 1, 1]
-    ], [
-        [1]
-    ], [
-        [1, 0, 0],
-        [1, 0, 0],
-        [1, 1, 1]
-    ], [
-        [1, 0],
-        [1, 1]
-    ], [
-        [1, 1]
-    ]
-].reduce((patterns, pattern) => {
-    function rotateRight(matrix) {
-        let rotated = [];
-        matrix.forEach(function (row, i) {
-            row.forEach(function (col, j) {
-                rotated[row.length - j - 1] = rotated[row.length - j - 1] || [];
-                rotated[row.length - j - 1][i] = col;
-            });
-        });
-        return rotated;
-    }
-
-    function toString(matrix) {
-        return matrix.map(row => row.join("")).join(",");
-    }
-
-    let rotate90 = rotateRight(pattern);
-    let rotate180 = rotateRight(rotate90);
-    let rotate270 = rotateRight(rotate180);
-    [pattern, rotate90, rotate180, rotate270].forEach((pattern) => {
-        if (!patterns.map((pattern) => toString(pattern)).includes(toString(pattern))) {
-            patterns.push(pattern);
-        }
-    });
-
-    return patterns;
-}, []).map((binRepr) => {
-    let indexRepr = [];
-    let indexOffset;
-    binRepr.forEach((row, i) => {
-        row.forEach((col, j) => {
-            if (col) {
-                if (!indexRepr.length) {
-                    indexOffset = [i, j];
-                    indexRepr.push([0, 0]);
-                } else {
-                    indexRepr.push([i - indexOffset[0], j - indexOffset[1]]);
-                }
-            }
-        })
-    });
-    return {
-        binRepr,
-        indexRepr
-    };
-});
-
-const colors = [
-    0xffc500,
-    0xf27e00,
-    0x91088c,
-    0x00ff06,
-    0xeb4e4e,
-    0xcef900,
-    0x51acdc,
-    0xf544de
-];
-
-function randomChoice(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
 }
