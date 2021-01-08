@@ -11,7 +11,8 @@ export default class MainScene extends Scene {
 
     preload() {
         this.load.image("tile", "assets/images/tile.png");
-        this.load.spritesheet("undo-redo-sheet", "assets/images/undo-redo-sheet.png", { frameWidth: 110, frameHeight: 113 });
+        this.load.image("undo-btn", "assets/images/undo-btn.png");
+        this.load.image("home-btn", "assets/images/home-btn.png");
         [...Array(8).keys()].forEach(i => {
             this.load.image(`particles${i}`, `assets/images/particles${i}.png`);
         });
@@ -30,10 +31,10 @@ export default class MainScene extends Scene {
         this.board = new Board(this);
         this.loadChesses();
 
-        this.undoBtn = this.add.sprite(
+        this.undoBtn = this.add.image(
             this.board.margin,
             this.board.margin,
-            "undo-redo-sheet", 0
+            "undo-btn"
         ).setInteractive();
         this.undoBtn.displayWidth = 0.06 * this.cameras.main.width;
         this.undoBtn.displayHeight = this.autoDisplayHeight(this.undoBtn);
@@ -77,7 +78,6 @@ export default class MainScene extends Scene {
                 this.chess.container.destroy();
             }
 
-            this.setFrame(0);
             if (!chess) {
                 this.setTint(0xe5e5e5);
             } else {
@@ -94,6 +94,14 @@ export default class MainScene extends Scene {
                 _this.chesses.forEach((chess) => chess.enter());
             }
         });
+
+        this.homeBtn = this.add.image(
+            this.board.margin,
+            this.cameras.main.height - this.board.margin,
+            "home-btn"
+        ).setInteractive();
+        this.homeBtn.displayWidth = 0.06 * this.cameras.main.width;
+        this.homeBtn.displayHeight = this.autoDisplayHeight(this.homeBtn);
 
         this.bestScoreIcon = this.add.image(
             this.board.centre.x,
