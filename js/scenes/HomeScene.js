@@ -12,12 +12,10 @@ export default class HomeScene extends Scene {
     }
 
     preload() {
-        [
-            ["logo", "assets/images/logo.png"],
-            ["start-btn", "assets/images/start-btn.png"]
-        ].forEach(([key, url]) => {
-            this.load.image(key, url);
-        });
+        this.load.image("logo", "assets/images/logo.png");
+        this.load.image("start-btn", "assets/images/start-btn.png");
+        this.load.image("continue-btn", "assets/images/continue-btn.png");
+        this.load.image("restart-btn", "assets/images/restart-btn.png");
 
         this.load.spritesheet("sound-sheet", "assets/images/sound-sheet.png", { frameWidth: 140, frameHeight: 132 });
         this.load.spritesheet("music-sheet", "assets/images/music-sheet.png", { frameWidth: 130, frameHeight: 122 });
@@ -35,29 +33,52 @@ export default class HomeScene extends Scene {
         logo.displayHeight = this.autoDisplayHeight(logo);
 
         let buttons = [];
-        let startBtn = this.add.image(
-            this.cameras.main.centerX,
-            this.cameras.main.centerY,
-            "start-btn"
-        ).setInteractive();
-        startBtn.displayWidth = 0.6 * this.cameras.main.width;
-        startBtn.displayHeight = this.autoDisplayHeight(startBtn);
-        startBtn.on("pointerout", () => {
-            if (this.fromMainScene) {
+
+        if (this.fromMainScene) {
+            let continueBtn = this.add.image(
+                this.cameras.main.centerX,
+                0.4 * this.cameras.main.height,
+                "continue-btn"
+            ).setInteractive();
+            continueBtn.displayWidth = 0.6 * this.cameras.main.width;
+            continueBtn.displayHeight = this.autoDisplayHeight(continueBtn);
+            continueBtn.on("pointerout", () => {
                 this.scene.stop();
                 this.scene.setVisible(true, "MainScene");
-            } else {
+            });
+            buttons.push(continueBtn);
+
+            let restartBtn = this.add.image(
+                this.cameras.main.centerX,
+                0.55 * this.cameras.main.height,
+                "restart-btn"
+            ).setInteractive();
+            restartBtn.displayWidth = 0.6 * this.cameras.main.width;
+            restartBtn.displayHeight = this.autoDisplayHeight(restartBtn);
+            restartBtn.on("pointerout", () => {
                 this.scene.start("MainScene");
-            }
-        });
-        buttons.push(startBtn);
+            });
+            buttons.push(restartBtn);
+        } else {
+            let startBtn = this.add.image(
+                this.cameras.main.centerX,
+                this.cameras.main.centerY,
+                "start-btn"
+            ).setInteractive();
+            startBtn.displayWidth = 0.6 * this.cameras.main.width;
+            startBtn.displayHeight = this.autoDisplayHeight(startBtn);
+            startBtn.on("pointerout", () => {
+                this.scene.start("MainScene");
+            });
+            buttons.push(startBtn);
+        }
 
         let soundBtn = this.add.sprite(
             0.4 * this.cameras.main.width,
             0.75 * this.cameras.main.height,
             "sound-sheet", this.audio.bgmOn ? 0 : 1
         ).setInteractive();
-        soundBtn.displayWidth = 0.15 * startBtn.displayWidth;
+        soundBtn.displayWidth = 0.09 * this.cameras.main.width;
         soundBtn.displayHeight = this.autoDisplayHeight(soundBtn);
         let _this = this;
         soundBtn.on("pointerout", function () {
@@ -76,7 +97,7 @@ export default class HomeScene extends Scene {
             0.75 * this.cameras.main.height,
             "music-sheet", this.audio.musicOn ? 0 : 1
         ).setInteractive();
-        musicBtn.displayWidth = 0.15 * startBtn.displayWidth;
+        musicBtn.displayWidth = 0.09 * this.cameras.main.width;
         musicBtn.displayHeight = this.autoDisplayHeight(musicBtn);
         musicBtn.on("pointerdown", function () {
             if (_this.audio.musicOn) {
