@@ -1,10 +1,12 @@
 import Scene from "./Scene";
 import Chess from "./MainScene/Chess";
 import Board from "./MainScene/Board";
+import Audio from "./Audio";
 
 export default class MainScene extends Scene {
     constructor() {
         super("MainScene");
+        this.audio = Audio.getInstance();
     }
 
     preload() {
@@ -161,6 +163,7 @@ export default class MainScene extends Scene {
     }
 
     score(row) {
+        this.audio.match.play();
         this.currentScore.value += row.length;
         this.currentScore.text = this.currentScore.value.toString();
 

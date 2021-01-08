@@ -1,17 +1,10 @@
+import Audio from "./Audio";
 import Scene from "./Scene";
 
 export default class HomeScene extends Scene {
     constructor() {
         super("HomeScene");
-
-        this.bgm = wx.createInnerAudioContext();
-        this.bgm.loop = true;
-        this.bgm.autoplay = true;
-        this.bgm.src = "assets/media/background.m4a";
-
-        this.navtap = wx.createInnerAudioContext();
-        this.navtap.src = "assets/media/navtap.m4a";
-        this.navtapOn = true;
+        this.audio = Audio.getInstance();
     }
 
     preload() {
@@ -56,12 +49,12 @@ export default class HomeScene extends Scene {
         soundBtn.displayHeight = this.autoDisplayHeight(soundBtn);
         let _this = this;
         soundBtn.on("pointerout", function () {
-            if (_this.bgm.paused) {
+            if (_this.audio.bgm.paused) {
                 this.setFrame(0);
-                _this.bgm.play();
+                _this.audio.bgm.play();
             } else {
                 this.setFrame(1);
-                _this.bgm.stop();
+                _this.audio.bgm.stop();
             }
         });
         buttons.push(soundBtn);
@@ -74,11 +67,11 @@ export default class HomeScene extends Scene {
         musicBtn.displayWidth = 0.15 * startBtn.displayWidth;
         musicBtn.displayHeight = this.autoDisplayHeight(musicBtn);
         musicBtn.on("pointerdown", function () {
-            if (_this.navtapOn) {
-                _this.navtapOn = false;
+            if (_this.audio.navTapOn) {
+                _this.navTapOn = false;
                 this.setFrame(1);
             } else {
-                _this.navtapOn = true;
+                _this.navTapOn = true;
                 this.setFrame(0);
             }
         });
@@ -90,10 +83,8 @@ export default class HomeScene extends Scene {
             });
             button.on("pointerout", function () {
                 this.clearTint();
-                if (_this.navtapOn) {
-                    _this.navtap.play();
-                }
             });
+            this.audio.addNavTap(button);
         });
     }
 }
