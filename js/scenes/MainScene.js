@@ -28,12 +28,33 @@ export default class MainScene extends Scene {
         ).setInteractive();
         this.undoBtn.displayWidth = 0.06 * this.cameras.main.width;
         this.undoBtn.displayHeight = this.autoDisplayHeight(this.undoBtn);
+        this.undoBtn.setTint(0x00c777);
         this.undoBtn.alpha = 0;
         let _this = this;
         this.undoBtn.on("pointerout", function () {
             if (this.alpha == 1) {
+                if (!this.frame.name) {
+                    if (!this.chess) {
+                        return;
+                    }
 
-                this.setFrame(1);
+                    if (_this.chesses.length == Chess.directions.length) {
+                        _this.chesses.forEach((chess) => chess.exit());
+                    }
+
+                    this.chess.container.list.forEach((block) => {
+                        block.tile.block.destroy();
+                        block.tile.block = null;
+                    });
+                    this.chess.container.setVisible(true);
+                    this.chess.moveToOrigin();
+
+                    _this.chesses.push(this.chess);
+                    this.chess = null;
+                    this.setFrame(1);
+                } else {
+                    this.setFrame(0);
+                }
             }
         });
 
@@ -46,10 +67,26 @@ export default class MainScene extends Scene {
                     ease: "Power2"
                 });
             }
+
+            if (this.chess) {
+                this.chess.container.destroy();
+            }
+
+            this.setFrame(0);
+            if (!chess) {
+                this.setTint(0xe5e5e5);
+            } else {
+                this.setTint(0x00c777);
+            }
+
             this.chess = chess;
 
             if (!_this.chesses.length) {
                 _this.loadChesses();
+            }
+
+            if (_this.chesses.length == Chess.directions.length) {
+                _this.chesses.forEach((chess) => chess.enter());
             }
         });
     }
@@ -65,7 +102,7 @@ export default class MainScene extends Scene {
     }
 
     loadChesses() {
-        this.chesses = [[-1, -1], [1, -1], [-1, 1], [1, 1]].reverse().map(([dx, dy]) => {
+        this.chesses = Chess.directions.reverse().map(([dx, dy]) => {
             return new Chess(this, dx, dy);
         });
 
@@ -75,7 +112,7 @@ export default class MainScene extends Scene {
                     Math.pow(block.parentContainer.x + block.x - tile.x, 2) +
                     Math.pow(block.parentContainer.y + block.y - tile.y, 2)
                 );
-                if (d < this.board.tileCTCD * 0.5) {
+                if (d < this.board.gridSize * 0.5) {
                     block.parentContainer.setPosition(
                         tile.x - block.x,
                         tile.y - block.y

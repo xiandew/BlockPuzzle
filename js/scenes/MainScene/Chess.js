@@ -1,104 +1,27 @@
 import Phaser from "../../libs/phaser-full.min";
 import UCB from "./utils/UCB";
-
-const patterns = [
-    [
-        [0, 1, 0],
-        [1, 1, 1]
-    ], [
-        [1, 0, 0],
-        [1, 1, 1]
-    ], [
-        [1, 1, 0],
-        [0, 1, 1]
-    ], [
-        [1, 1],
-        [1, 1]
-    ], [
-        [1, 1, 1]
-    ], [
-        [1]
-    ], [
-        [1, 0, 0],
-        [1, 0, 0],
-        [1, 1, 1]
-    ], [
-        [1, 0],
-        [1, 1]
-    ], [
-        [1, 1]
-    ]
-].reduce((patterns, pattern) => {
-    function rotateRight(matrix) {
-        let rotated = [];
-        matrix.forEach(function (row, i) {
-            row.forEach(function (col, j) {
-                rotated[row.length - j - 1] = rotated[row.length - j - 1] || [];
-                rotated[row.length - j - 1][i] = col;
-            });
-        });
-        return rotated;
-    }
-
-    function toString(matrix) {
-        return matrix.map(row => row.join("")).join(",");
-    }
-
-    let rotate90 = rotateRight(pattern);
-    let rotate180 = rotateRight(rotate90);
-    let rotate270 = rotateRight(rotate180);
-    [pattern, rotate90, rotate180, rotate270].forEach((pattern) => {
-        if (!patterns.map((pattern) => toString(pattern)).includes(toString(pattern))) {
-            patterns.push(pattern);
-        }
-    });
-
-    return patterns;
-}, []).map((binRepr) => {
-    let indexRepr = [];
-    let indexOffset;
-    binRepr.forEach((row, i) => {
-        row.forEach((col, j) => {
-            if (col) {
-                if (!indexRepr.length) {
-                    indexOffset = [i, j];
-                    indexRepr.push([0, 0]);
-                } else {
-                    indexRepr.push([i - indexOffset[0], j - indexOffset[1]]);
-                }
-            }
-        })
-    });
-    return {
-        binRepr,
-        indexRepr
-    };
-});
-
-const colors = [
-    0xffc500,
-    0xf27e00,
-    0x91088c,
-    0x00ff06,
-    0xeb4e4e,
-    0xcef900,
-    0x51acdc,
-    0xf544de
-];
+import { patterns, colors } from "./Data";
 
 export default class Chess extends Phaser.Physics.Arcade.Group {
+    static directions = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
     static ucb = new UCB(patterns.length);
 
     constructor(scene, dx, dy) {
         super(scene.physics.world, scene);
 
         const margin = {
-            x: 2.5 * scene.board.tileCTCD,
-            y: 7.5 * scene.board.tileCTCD
+            x: 2.5 * scene.board.gridSize,
+            y: 7.5 * scene.board.gridSize
         }
-        const origin = {
+
+        this.origin = {
             x: scene.board.centre.x + dx * margin.x,
             y: scene.board.centre.y + dy * margin.y
+        };
+
+        this.start = {
+            x: this.origin.x + dx * (scene.cameras.main.width * 0.5 - margin.x),
+            y: this.origin.y
         };
 
         const patternIndex = Chess.ucb.play();
@@ -106,14 +29,13 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         const pattern = patterns[patternIndex];
 
         const { color, colorIndex } = UCB.randomChoice(colors.map((color, colorIndex) => { return { color, colorIndex }; }));
-        this.container = scene.add.container(
-            origin.x + dx * (scene.cameras.main.width * 0.5 - margin.x),
-            origin.y
-        );
+        this.color = color;
+        this.colorIndex = colorIndex;
+        this.container = scene.add.container(this.start.x, this.start.y);
         this.container.alpha = 0;
         this.container.setSize(
-            pattern.binRepr.length * scene.board.tileCTCD,
-            pattern.binRepr[0].length * scene.board.tileCTCD
+            pattern.binRepr.length * scene.board.gridSize,
+            pattern.binRepr[0].length * scene.board.gridSize
         );
         scene.physics.world.enable(this.container);
 
@@ -130,13 +52,14 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         this.container.add(
             pattern.indexRepr.map((blockIdxRepr) => {
                 let block = scene.add.image(
-                    (blockIdxRepr[0] - this.offset[0]) * scene.board.tileCTCD,
-                    (blockIdxRepr[1] - this.offset[1]) * scene.board.tileCTCD,
+                    (blockIdxRepr[0] - this.offset[0]) * scene.board.gridSize,
+                    (blockIdxRepr[1] - this.offset[1]) * scene.board.gridSize,
                     "tile"
                 );
                 block.indexRepr = blockIdxRepr;
                 block.displayWidth = block.displayHeight = scene.board.tileSize;
                 block.setTint(color);
+                block.colorIndex = this.colorIndex;
                 return block;
             })
         );
@@ -154,13 +77,13 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
                 this.y = dragY;
             } else {
                 const draggedX = dragX - this.x;
-                const deltaX = median([-scene.board.tileCTCD, draggedX, scene.board.tileCTCD]);
+                const deltaX = median([-scene.board.gridSize, draggedX, scene.board.gridSize]);
                 if (deltaX != draggedX) {
                     this.setX(this.x + deltaX);
                 }
 
                 const draggedY = dragY - this.y;
-                const deltaY = median([-scene.board.tileCTCD, draggedY, scene.board.tileCTCD]);
+                const deltaY = median([-scene.board.gridSize, draggedY, scene.board.gridSize]);
                 if (deltaY != draggedY) {
                     this.setY(this.y + deltaY);
                 }
@@ -192,40 +115,61 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
                     block.tile.block.colorIndex = colorIndex;
                 });
 
-                this.destroy();
+                this.setVisible(false);
                 scene.chesses.splice(scene.chesses.indexOf(_this), 1);
-                scene.undoBtn.emit("placechess", _this);
 
-                scene.board.tiles.reduce((matches, row, i) => {
-                    return matches.concat([match(row), match(scene.board.tiles.map((row) => row[i]))]);
+                const matches = scene.board.tiles.reduce((matches, row, i) => {
+                    return matches
+                        .concat(match(row) || [])
+                        .concat(match(scene.board.tiles.map((row) => row[i])) || []);
 
                     function match(row) {
                         if (row.every((tile) => tile.block)) {
-                            return row;
+                            return [row];
                         }
-                        return null
+                        return null;
                     }
-                }, []).forEach((match) => match && scene.score(match));
+                }, []);
+                matches.forEach((match) => scene.score(match));
+                scene.undoBtn.emit("placechess", matches.length ? (this.destroy(), null) : _this);
 
                 return;
             }
 
             this.onBoard = false;
-
-            scene.tweens.add({
-                targets: this,
-                x: origin.x,
-                y: origin.y,
-                duration: 400,
-                ease: "Power2"
-            });
+            _this.moveToOrigin();
         });
 
-        scene.tweens.add({
+        this.enter();
+    }
+
+    moveToOrigin() {
+        this.scene.tweens.add({
             targets: this.container,
-            x: { start: this.container.x, to: origin.x },
-            y: origin.y,
+            x: this.origin.x,
+            y: this.origin.y,
+            duration: 400,
+            ease: "Power2"
+        });
+    }
+
+    enter() {
+        this.scene.tweens.add({
+            targets: this.container,
+            x: { start: this.container.x, to: this.origin.x },
+            y: this.origin.y,
             alpha: { start: 0, to: 1 },
+            duration: 400,
+            ease: "Power2"
+        });
+    }
+
+    exit() {
+        this.scene.tweens.add({
+            targets: this.container,
+            x: { start: this.container.x, to: this.start.x },
+            y: this.start.y,
+            alpha: 0,
             duration: 400,
             ease: "Power2"
         });
