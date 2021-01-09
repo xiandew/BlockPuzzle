@@ -248,9 +248,16 @@ export default class MainScene extends Scene {
                 })
             });
 
-            wx.getOpenDataContext().postMessage({
-                action: "UpdateBestRecord",
-                bestRecord: this.currentScore
+            wx.setUserCloudStorage({
+                KVDataList: [{
+                    key: "bestRecord",
+                    value: JSON.stringify({
+                        wxgame: {
+                            score: this.currentScore,
+                            update_time: new Date().getTime()
+                        }
+                    })
+                }]
             });
         }
 
