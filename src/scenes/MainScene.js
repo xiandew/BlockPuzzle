@@ -132,6 +132,20 @@ export default class MainScene extends Scene {
             "0", 0.05 * this.cameras.main.width
         ).setOrigin(0, 0.5);
         this.bestScore.value = 0;
+
+        // setup the offscreen canvas for the best score
+        // let sharedCanvas = wx.getOpenDataContext().canvas;
+        // let sharedCanvas.width = this.cameras.main.width;
+        // let sharedCanvas.height = this.cameras.main.height;
+
+        // this.textures.addCanvas("sharedCanvas", sharedCanvas);
+        // this.sharedCanvas = this.add.image(
+        //     this.cameras.main.centerX,
+        //     this.cameras.main.centerY,
+        //     "sharedCanvas"
+        // );
+        // this.sharedCanvas.displayWidth = this.cameras.main.width;
+        // this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
     }
 
     update() {
@@ -185,6 +199,13 @@ export default class MainScene extends Scene {
             this.bestScore.value = this.currentScore.value;
             this.bestScore.text = this.currentScore.text;
         }
+
+        // wx.getOpenDataContext().postMessage({
+        //     action: "RenderBestScore",
+        //     score: this.currentScore,
+        //     x: this.board.centre.x + this.bestScoreIcon.displayWidth,
+        //     y: this.board.margin
+        // });
 
         row.map((tile) => tile.block).forEach((block, i) => {
             if (!block) {

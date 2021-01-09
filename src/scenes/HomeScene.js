@@ -119,5 +119,17 @@ export default class HomeScene extends Scene {
             });
             this.audio.addNavTap(button);
         });
+
+        this.events.on("shutdown", () => {
+            wx.setStorage({
+                key: "setting",
+                data: JSON.stringify({
+                    bgmOn: this.bgmOn,
+                    musicOn: this.musicOn
+                })
+            });
+
+            this.events.off("shutdown");
+        });
     }
 }
