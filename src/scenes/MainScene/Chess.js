@@ -116,22 +116,7 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
                 });
 
                 this.setVisible(false);
-                scene.chesses.splice(scene.chesses.indexOf(_this), 1);
-
-                const matches = scene.board.tiles.reduce((matches, row, i) => {
-                    return matches
-                        .concat(match(row) || [])
-                        .concat(match(scene.board.tiles.map((row) => row[i])) || []);
-
-                    function match(row) {
-                        if (row.every((tile) => tile.block)) {
-                            return [row];
-                        }
-                        return null;
-                    }
-                }, []);
-                matches.forEach((match) => scene.score(match));
-                scene.undoBtn.emit("placechess", matches.length ? (this.destroy(), null) : _this);
+                scene.events.emit("placechess", _this);
 
                 return scene.audio.playPlaceChess();
             }

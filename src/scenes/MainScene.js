@@ -18,6 +18,8 @@ export default class MainScene extends Scene {
         });
 
         this.load.image("best-score", "assets/images/best-score.png");
+        this.load.image("gameover-text", "assets/images/gameover-text.png");
+        this.load.image("undo-text-btn", "assets/images/undo-text-btn.png");
         this.load.bitmapFont(
             "basic-square-7-solid",
             "assets/fonts/bitmap/basic-square-7-solid_0.png",
@@ -95,6 +97,32 @@ export default class MainScene extends Scene {
             }
         });
 
+        this.events.on("placechess", (chess) => {
+            this.chesses.splice(this.chesses.indexOf(chess), 1);
+
+            const matches = this.board.tiles.reduce((matches, row, i) => {
+                return matches
+                    .concat(match(row) || [])
+                    .concat(match(this.board.tiles.map((row) => row[i])) || []);
+
+                function match(row) {
+                    if (row.every((tile) => tile.block)) {
+                        return [row];
+                    }
+                    return null;
+                }
+            }, []);
+            matches.forEach((match) => this.score(match));
+
+            if (matches.length) {
+                this.undoBtn.emit("placechess");
+                chess.container.destroy();
+            } else {
+                this.undoBtn.emit("placechess", chess);
+                this.tryGameOver();
+            }
+        });
+
         let homeBtn = this.add.image(
             this.board.margin,
             this.cameras.main.height - this.board.margin,
@@ -125,13 +153,24 @@ export default class MainScene extends Scene {
         ).setOrigin(1, 0.5);
         this.currentScore.value = 0;
 
+        let bestRecord = 0;
+        try {
+            let data = wx.getStorageSync("data")
+            if (data) {
+                data = JSON.parse(data);
+                if (data.bestRecord) bestRecord = data.bestRecord;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
         this.bestScore = this.add.bitmapText(
             this.board.centre.x + this.bestScoreIcon.displayWidth,
             this.board.margin,
             "basic-square-7-solid",
-            "0", 0.05 * this.cameras.main.width
+            bestRecord, 0.05 * this.cameras.main.width
         ).setOrigin(0, 0.5);
-        this.bestScore.value = 0;
+        this.bestScore.value = bestRecord;
 
         // setup the offscreen canvas for the best score
         // let sharedCanvas = wx.getOpenDataContext().canvas;
@@ -146,6 +185,8 @@ export default class MainScene extends Scene {
         // );
         // this.sharedCanvas.displayWidth = this.cameras.main.width;
         // this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
+
+        this.createGameOverModal();
     }
 
     update() {
@@ -198,6 +239,14 @@ export default class MainScene extends Scene {
         if (this.currentScore.value > this.bestScore.value) {
             this.bestScore.value = this.currentScore.value;
             this.bestScore.text = this.currentScore.text;
+
+            wx.setStorage({
+                key: "data",
+                data: JSON.stringify({
+                    bestRecord: this.currentScore.value,
+                    lastUpdate: new Date().getTime()
+                })
+            });
         }
 
         // wx.getOpenDataContext().postMessage({
@@ -232,8 +281,90 @@ export default class MainScene extends Scene {
                 onComplete: () => {
                     block.destroy();
                     row[i].block = null;
+
+                    if (row.every((tile) => !tile.block)) {
+                        this.tryGameOver();
+                    }
                 }
             });
         });
+    }
+
+    tryGameOver() {
+        if (!this.chesses.some((chess) => {
+            return this.board.getChildren().some((tile) => {
+                return chess.container.list.every((block) => {
+                    const r = this.board.tiles[tile.indexRepr[0] + block.indexRepr[0]];
+                    const t = r && r[tile.indexRepr[1] + block.indexRepr[1]];
+                    return t && !t.block;
+                });
+            });
+        })) {
+            this.showGameOverModal();
+        }
+    }
+
+    showGameOverModal() {
+        this.tweens.add({
+            targets: this.gameOverModal,
+            x: this.gameOverModal.x,
+            y: this.cameras.main.centerY,
+            alpha: 1,
+            duration: 400,
+            ease: "Power2"
+        });
+    }
+
+    hideGameOverModal() {
+        this.tweens.add({
+            targets: this.gameOverModal,
+            x: this.gameOverModal.x,
+            y: 0,
+            alpha: 0,
+            duration: 400,
+            ease: "Power2"
+        });
+    }
+
+    createGameOverModal() {
+        this.gameOverModal = this.add.container(this.cameras.main.centerX, 0);
+        this.gameOverModal.setDepth(Infinity);
+        this.gameOverModal.alpha = 0;
+        this.gameOverModal.setSize(0.9 * this.cameras.main.width, 0.7 * this.cameras.main.height);
+
+        let graphics = this.add.graphics();
+        graphics.fillStyle(0xeadeda, 1);
+        graphics.fillRoundedRect(
+            (this.cameras.main.width - this.gameOverModal.width) * 0.5,
+            (this.cameras.main.height - this.gameOverModal.height) * 0.5,
+            this.gameOverModal.width,
+            this.gameOverModal.height,
+            this.gameOverModal.width * 0.05
+        );
+        graphics.generateTexture("gameOverModalBackground");
+        graphics.destroy();
+        let gameOverModalBackground = this.add.sprite(0, 0, "gameOverModalBackground");
+        let gameOverText = this.add.image(0, -0.42 * this.gameOverModal.height, "gameover-text");
+        gameOverText.displayWidth = 0.9 * this.gameOverModal.width;
+        gameOverText.displayHeight = this.autoDisplayHeight(gameOverText);
+        gameOverText.setTint(0xff6f69);
+
+        let undoTextBtn = this.add.image(0, -0.2 * this.gameOverModal.height, "undo-text-btn").setInteractive();
+        undoTextBtn.displayWidth = 0.6 * this.cameras.main.width;
+        undoTextBtn.displayHeight = this.autoDisplayHeight(undoTextBtn);
+        undoTextBtn.on("pointerout", () => {
+            this.hideGameOverModal();
+            this.undoBtn.emit("pointerout");
+        });
+
+        let restartBtn = this.add.image(0, 0, "restart-btn").setInteractive();
+        restartBtn.displayWidth = 0.6 * this.cameras.main.width;
+        restartBtn.displayHeight = this.autoDisplayHeight(restartBtn);
+        restartBtn.on("pointerout", () => this.scene.start("MainScene"));
+
+        this.gameOverModal.add(gameOverModalBackground);
+        this.gameOverModal.add(gameOverText);
+        this.gameOverModal.add(undoTextBtn);
+        this.gameOverModal.add(restartBtn);
     }
 }
