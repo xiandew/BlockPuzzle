@@ -124,8 +124,8 @@ export default class HomeScene extends Scene {
             wx.setStorage({
                 key: "setting",
                 data: JSON.stringify({
-                    bgmOn: this.bgmOn,
-                    musicOn: this.musicOn
+                    bgmOn: this.audio.bgmOn,
+                    musicOn: this.audio.musicOn
                 })
             });
 
