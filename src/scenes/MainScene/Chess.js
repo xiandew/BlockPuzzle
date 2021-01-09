@@ -159,4 +159,15 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
             ease: "Power2"
         });
     }
+
+    shake(onComplete = () => { }) {
+        this.scene.tweens.add({
+            targets: this.container,
+            angle: 5,
+            duration: 100,
+            yoyo: true,
+            repeat: 2,
+            onComplete
+        });
+    }
 }

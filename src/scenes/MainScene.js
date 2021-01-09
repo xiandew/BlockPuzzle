@@ -298,7 +298,14 @@ export default class MainScene extends Scene {
                 });
             });
         })) {
-            this.showGameOverModal();
+            this.chesses.forEach((chess) => {
+                chess.shake(() => {
+                    chess.shaked = true;
+                    if (this.chesses.every((chess) => chess.shaked)) {
+                        this.showGameOverModal();
+                    }
+                });
+            });
         }
     }
 
