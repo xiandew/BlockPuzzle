@@ -122,6 +122,10 @@ export default class MainScene extends Scene {
                 this.tryGameOver();
             }
         });
+        this.events.on("shutdown", () => {
+            this.events.off("placechess");
+            this.events.off("shutdown");
+        });
 
         let homeBtn = this.add.image(
             this.board.margin,
