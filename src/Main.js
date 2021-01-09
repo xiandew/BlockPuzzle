@@ -28,3 +28,14 @@ export default class Main extends Phaser.Game {
         });
     }
 }
+
+wx.showShareMenu({
+    withShareTicket: true,
+});
+
+wx.onShareAppMessage(() => {
+    return {
+        title: "方块拼图，简单的快乐",
+        imageUrl: "assets/images/share.jpg"
+    }
+});
