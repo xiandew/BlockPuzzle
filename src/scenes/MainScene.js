@@ -354,11 +354,13 @@ export default class MainScene extends Scene {
             this.hideGameOverModal();
             this.undoBtn.emit("pointerout");
         });
+        this.audio.addNavTap(undoTextBtn);
 
         let restartBtn = this.add.image(0, 0, "restart-btn").setInteractive();
         restartBtn.displayWidth = 0.6 * this.cameras.main.width;
         restartBtn.displayHeight = this.autoDisplayHeight(restartBtn);
         restartBtn.on("pointerout", () => this.scene.start("MainScene"));
+        this.audio.addNavTap(restartBtn);
 
         this.gameOverModal.add(gameOverModalBackground);
         this.gameOverModal.add(gameOverText);
