@@ -7,23 +7,22 @@ class Main {
     constructor() {
         wx.onMessage((msg) => {
             const action = msg.action;
-            // if (action === "RenderBestScore") {
+            // if (action === "RenderBestRecord") {
             //     if (this.assetsLoaded) {
             //         const { score, x, y } = msg;
             //         this.bitmapText.draw(this.ctx, score, 0.05 * this.canvas.width, x, y);
             //     }
             // }
 
-            if (action === "GameEnded") {
-                const score = msg.score;
+            if (action === "UpdateBestRecord") {
                 const now = new Date();
 
                 wx.setUserCloudStorage({
                     KVDataList: [{
-                        key: "record",
+                        key: "bestRecord",
                         value: JSON.stringify({
                             wxgame: {
-                                score: score,
+                                score: msg.bestRecord,
                                 update_time: now.getTime()
                             }
                         })

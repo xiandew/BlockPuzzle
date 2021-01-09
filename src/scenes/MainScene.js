@@ -247,14 +247,12 @@ export default class MainScene extends Scene {
                     lastUpdate: new Date().getTime()
                 })
             });
-        }
 
-        // wx.getOpenDataContext().postMessage({
-        //     action: "RenderBestScore",
-        //     score: this.currentScore,
-        //     x: this.board.centre.x + this.bestScoreIcon.displayWidth,
-        //     y: this.board.margin
-        // });
+            wx.getOpenDataContext().postMessage({
+                action: "UpdateBestRecord",
+                bestRecord: this.currentScore
+            });
+        }
 
         row.map((tile) => tile.block).forEach((block, i) => {
             if (!block) {
