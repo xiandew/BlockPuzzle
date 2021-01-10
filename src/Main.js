@@ -25,12 +25,13 @@ export default class Main extends Phaser.Game {
             scene: [HomeScene, MainScene],
         });
 
-        if (this.config.height > this.config.width) {
+        const aspectRatio = 568 / 320;
+        if (this.config.height / this.config.width > aspectRatio) {
             GameGlobal.width = this.config.width;
-            GameGlobal.height = this.config.width / 320 * 568;
+            GameGlobal.height = this.config.width * aspectRatio;
         } else {
             GameGlobal.height = this.config.height;
-            GameGlobal.width = this.config.height / 568 * 320;
+            GameGlobal.width = this.config.height / aspectRatio;
         }
         GameGlobal.centerX = this.config.width * 0.5;
         GameGlobal.centerY = this.config.height * 0.5;
