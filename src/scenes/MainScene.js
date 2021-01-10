@@ -113,7 +113,16 @@ export default class MainScene extends Scene {
                     return null;
                 }
             }, []);
-            matches.forEach((match) => this.score(match));
+
+            let i = 0;
+            matches.forEach((match) => {
+                this.score(match, () => {
+                    i++;
+                    if (i == matches.length) {
+                        this.tryGameOver();
+                    }
+                });
+            });
 
             if (matches.length) {
                 this.undoBtn.emit("placechess");
@@ -236,7 +245,7 @@ export default class MainScene extends Scene {
         });
     }
 
-    score(row) {
+    score(row, onComplete) {
         this.audio.playMatch();
         this.currentScore.value += row.length;
         this.currentScore.text = this.currentScore.value.toString();
@@ -291,9 +300,8 @@ export default class MainScene extends Scene {
                 onComplete: () => {
                     block.destroy();
                     row[i].block = null;
-
                     if (row.every((tile) => !tile.block)) {
-                        this.tryGameOver();
+                        onComplete();
                     }
                 }
             });
