@@ -1,16 +1,17 @@
 import Phaser from "./libs/phaser-full.min";
 import HomeScene from "./scenes/HomeScene";
 import MainScene from "./scenes/MainScene";
+import GameGlobal from "./data/GameGlobal";
 
 export default class Main extends Phaser.Game {
 
     constructor() {
-        let { pixelRatio } = wx.getSystemInfoSync();
+        let { screenWidth, screenHeight, pixelRatio } = wx.getSystemInfoSync();
         super({
             type: Phaser.WEBGL,
             canvas: canvas,
-            width: 320 * pixelRatio,
-            height: 568 * pixelRatio,
+            width: screenWidth * pixelRatio,
+            height: screenHeight * pixelRatio,
             backgroundColor: 0xffffff,
             physics: {
                 default: "arcade",
@@ -18,15 +19,21 @@ export default class Main extends Phaser.Game {
                     debug: false
                 }
             },
-            scale: {
-                mode: Phaser.Scale.FIT,
-                autoCenter: Phaser.Scale.CENTER_BOTH,
-            },
             input: {
                 touch: true
             },
             scene: [HomeScene, MainScene],
         });
+
+        if (this.config.height > this.config.width) {
+            GameGlobal.width = this.config.width;
+            GameGlobal.height = this.config.width / 320 * 568;
+        } else {
+            GameGlobal.height = this.config.height;
+            GameGlobal.width = this.config.height / 568 * 320;
+        }
+        GameGlobal.centerX = this.config.width * 0.5;
+        GameGlobal.centerY = this.config.height * 0.5;
     }
 }
 

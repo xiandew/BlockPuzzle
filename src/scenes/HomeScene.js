@@ -1,5 +1,6 @@
-import Audio from "./Audio";
+import Audio from "../utils/Audio";
 import Scene from "./Scene";
+import GameGlobal from "../data/GameGlobal";
 
 export default class HomeScene extends Scene {
     constructor() {
@@ -25,22 +26,22 @@ export default class HomeScene extends Scene {
         this.cameras.main.setBackgroundColor(0xeadeda);
 
         let logo = this.add.image(
-            this.cameras.main.centerX,
-            this.cameras.main.height * 0.2,
+            GameGlobal.centerX,
+            GameGlobal.centerY - GameGlobal.height * 0.3,
             "logo"
         );
-        logo.displayWidth = this.cameras.main.width;
+        logo.displayWidth = GameGlobal.width;
         logo.displayHeight = this.autoDisplayHeight(logo);
 
         let buttons = [];
 
         if (this.fromMainScene) {
             let continueBtn = this.add.image(
-                this.cameras.main.centerX,
-                0.4 * this.cameras.main.height,
+                GameGlobal.centerX,
+                GameGlobal.centerY - GameGlobal.height * 0.1,
                 "continue-btn"
             ).setInteractive();
-            continueBtn.displayWidth = 0.6 * this.cameras.main.width;
+            continueBtn.displayWidth = 0.6 * GameGlobal.width;
             continueBtn.displayHeight = this.autoDisplayHeight(continueBtn);
             continueBtn.on("pointerout", () => {
                 this.scene.stop();
@@ -49,11 +50,11 @@ export default class HomeScene extends Scene {
             buttons.push(continueBtn);
 
             let restartBtn = this.add.image(
-                this.cameras.main.centerX,
-                0.55 * this.cameras.main.height,
+                GameGlobal.centerX,
+                GameGlobal.centerY + GameGlobal.height * 0.05,
                 "restart-btn"
             ).setInteractive();
-            restartBtn.displayWidth = 0.6 * this.cameras.main.width;
+            restartBtn.displayWidth = 0.6 * GameGlobal.width;
             restartBtn.displayHeight = this.autoDisplayHeight(restartBtn);
             restartBtn.on("pointerout", () => {
                 this.scene.start("MainScene");
@@ -61,11 +62,11 @@ export default class HomeScene extends Scene {
             buttons.push(restartBtn);
         } else {
             let startBtn = this.add.image(
-                this.cameras.main.centerX,
-                this.cameras.main.centerY,
+                GameGlobal.centerX,
+                GameGlobal.centerY,
                 "start-btn"
             ).setInteractive();
-            startBtn.displayWidth = 0.6 * this.cameras.main.width;
+            startBtn.displayWidth = 0.6 * GameGlobal.width;
             startBtn.displayHeight = this.autoDisplayHeight(startBtn);
             startBtn.on("pointerout", () => {
                 this.scene.start("MainScene");
@@ -74,11 +75,11 @@ export default class HomeScene extends Scene {
         }
 
         let soundBtn = this.add.sprite(
-            0.4 * this.cameras.main.width,
-            0.75 * this.cameras.main.height,
+            GameGlobal.centerX - GameGlobal.width * 0.1,
+            GameGlobal.centerY + GameGlobal.height * 0.25,
             "sound-sheet", this.audio.bgmOn ? 0 : 1
         ).setInteractive();
-        soundBtn.displayWidth = 0.09 * this.cameras.main.width;
+        soundBtn.displayWidth = 0.09 * GameGlobal.width;
         soundBtn.displayHeight = this.autoDisplayHeight(soundBtn);
         let _this = this;
         soundBtn.on("pointerout", function () {
@@ -93,11 +94,11 @@ export default class HomeScene extends Scene {
         buttons.push(soundBtn);
 
         let musicBtn = this.add.sprite(
-            0.6 * this.cameras.main.width,
-            0.75 * this.cameras.main.height,
+            GameGlobal.centerX + GameGlobal.width * 0.1,
+            GameGlobal.centerY + GameGlobal.height * 0.25,
             "music-sheet", this.audio.musicOn ? 0 : 1
         ).setInteractive();
-        musicBtn.displayWidth = 0.09 * this.cameras.main.width;
+        musicBtn.displayWidth = 0.09 * GameGlobal.width;
         musicBtn.displayHeight = this.autoDisplayHeight(musicBtn);
         musicBtn.on("pointerdown", function () {
             if (_this.audio.musicOn) {

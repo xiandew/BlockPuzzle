@@ -1,17 +1,17 @@
 import Phaser from "../../libs/phaser-full.min";
-
+import GameGlobal from "../../data/GameGlobal";
 
 export default class Board extends Phaser.Physics.Arcade.StaticGroup {
     constructor(scene) {
         super(scene.physics.world, scene);
 
         let nRows = 10, nCols = 10;
-        this.margin = 0.1 * scene.cameras.main.width;
+        this.margin = 0.1 * GameGlobal.width;
         this.centre = {
-            x: scene.cameras.main.centerX,
-            y: scene.cameras.main.centerY
+            x: GameGlobal.centerX,
+            y: GameGlobal.centerY
         }
-        this.gridSize = (scene.cameras.main.width - 2 * this.margin) / nCols;
+        this.gridSize = (GameGlobal.width - 2 * this.margin) / nCols;
         this.tileSize = this.gridSize - 3;
         let startX = this.centre.x + (-nCols * 0.5 + 0.5) * this.gridSize;
         let startY = this.centre.y + (-nRows * 0.5 + 0.5) * this.gridSize;

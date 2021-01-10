@@ -1,7 +1,8 @@
 import Scene from "./Scene";
 import Chess from "./MainScene/Chess";
 import Board from "./MainScene/Board";
-import Audio from "./Audio";
+import Audio from "../utils/Audio";
+import GameGlobal from "../data/GameGlobal";
 
 export default class MainScene extends Scene {
     constructor() {
@@ -34,11 +35,11 @@ export default class MainScene extends Scene {
         this.loadChesses();
 
         this.undoBtn = this.add.image(
-            this.board.margin,
-            this.board.margin,
+            GameGlobal.centerX - GameGlobal.width * 0.4,
+            GameGlobal.centerY - GameGlobal.height * 0.45,
             "undo-btn"
         ).setInteractive();
-        this.undoBtn.displayWidth = 0.06 * this.cameras.main.width;
+        this.undoBtn.displayWidth = 0.06 * GameGlobal.width;
         this.undoBtn.displayHeight = this.autoDisplayHeight(this.undoBtn);
         this.undoBtn.setTint(0x00c777);
         this.undoBtn.alpha = 0;
@@ -128,11 +129,11 @@ export default class MainScene extends Scene {
         });
 
         let homeBtn = this.add.image(
-            this.board.margin,
-            this.cameras.main.height - this.board.margin,
+            GameGlobal.centerX - GameGlobal.width * 0.4,
+            GameGlobal.centerY + GameGlobal.height * 0.45,
             "home-btn"
         ).setInteractive();
-        homeBtn.displayWidth = 0.06 * this.cameras.main.width;
+        homeBtn.displayWidth = 0.06 * GameGlobal.width;
         homeBtn.displayHeight = this.autoDisplayHeight(homeBtn);
         homeBtn.on("pointerout", () => {
             this.scene.setVisible(false);
@@ -142,18 +143,18 @@ export default class MainScene extends Scene {
         this.audio.addNavTap(homeBtn);
 
         this.bestScoreIcon = this.add.image(
-            this.board.centre.x,
-            this.board.margin,
+            GameGlobal.centerX,
+            GameGlobal.centerY - GameGlobal.height * 0.45,
             "best-score"
         );
         this.bestScoreIcon.displayWidth = this.undoBtn.displayWidth;
         this.bestScoreIcon.displayHeight = this.autoDisplayHeight(this.bestScoreIcon);
 
         this.currentScore = this.add.bitmapText(
-            this.board.centre.x - this.bestScoreIcon.displayWidth,
-            this.board.margin,
+            GameGlobal.centerX - this.bestScoreIcon.displayWidth,
+            GameGlobal.centerY - GameGlobal.height * 0.45,
             "basic-square-7-solid",
-            "0", 0.05 * this.cameras.main.width
+            "0", 0.05 * GameGlobal.width
         ).setOrigin(1, 0.5);
         this.currentScore.value = 0;
 
@@ -169,25 +170,25 @@ export default class MainScene extends Scene {
         }
 
         this.bestScore = this.add.bitmapText(
-            this.board.centre.x + this.bestScoreIcon.displayWidth,
-            this.board.margin,
+            GameGlobal.centerX + this.bestScoreIcon.displayWidth,
+            GameGlobal.centerY - GameGlobal.height * 0.45,
             "basic-square-7-solid",
-            bestRecord, 0.05 * this.cameras.main.width
+            bestRecord, 0.05 * GameGlobal.width
         ).setOrigin(0, 0.5);
         this.bestScore.value = bestRecord;
 
         // setup the offscreen canvas for the best score
         // let sharedCanvas = wx.getOpenDataContext().canvas;
-        // let sharedCanvas.width = this.cameras.main.width;
-        // let sharedCanvas.height = this.cameras.main.height;
+        // let sharedCanvas.width = GameGlobal.width;
+        // let sharedCanvas.height = GameGlobal.height;
 
         // this.textures.addCanvas("sharedCanvas", sharedCanvas);
         // this.sharedCanvas = this.add.image(
-        //     this.cameras.main.centerX,
-        //     this.cameras.main.centerY,
+        //     GameGlobal.centerX,
+        //     GameGlobal.centerY,
         //     "sharedCanvas"
         // );
-        // this.sharedCanvas.displayWidth = this.cameras.main.width;
+        // this.sharedCanvas.displayWidth = GameGlobal.width;
         // this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
 
         this.createGameOverModal();
@@ -324,7 +325,7 @@ export default class MainScene extends Scene {
         this.tweens.add({
             targets: this.gameOverModal,
             x: this.gameOverModal.x,
-            y: this.cameras.main.centerY,
+            y: GameGlobal.centerY,
             alpha: 1,
             duration: 400,
             ease: "Power2"
@@ -343,16 +344,16 @@ export default class MainScene extends Scene {
     }
 
     createGameOverModal() {
-        this.gameOverModal = this.add.container(this.cameras.main.centerX, 0);
+        this.gameOverModal = this.add.container(GameGlobal.centerX, 0);
         this.gameOverModal.setDepth(Infinity);
         this.gameOverModal.alpha = 0;
-        this.gameOverModal.setSize(0.9 * this.cameras.main.width, 0.7 * this.cameras.main.height);
+        this.gameOverModal.setSize(0.9 * GameGlobal.width, 0.7 * GameGlobal.height);
 
         let graphics = this.add.graphics();
         graphics.fillStyle(0xeadeda, 1);
         graphics.fillRoundedRect(
-            (this.cameras.main.width - this.gameOverModal.width) * 0.5,
-            (this.cameras.main.height - this.gameOverModal.height) * 0.5,
+            (GameGlobal.width - this.gameOverModal.width) * 0.5,
+            (GameGlobal.height - this.gameOverModal.height) * 0.5,
             this.gameOverModal.width,
             this.gameOverModal.height,
             this.gameOverModal.width * 0.05
@@ -366,7 +367,7 @@ export default class MainScene extends Scene {
         gameOverText.setTint(0xff6f69);
 
         let undoTextBtn = this.add.image(0, -0.2 * this.gameOverModal.height, "undo-text-btn").setInteractive();
-        undoTextBtn.displayWidth = 0.6 * this.cameras.main.width;
+        undoTextBtn.displayWidth = 0.6 * GameGlobal.width;
         undoTextBtn.displayHeight = this.autoDisplayHeight(undoTextBtn);
         undoTextBtn.on("pointerout", () => {
             this.hideGameOverModal();
@@ -375,7 +376,7 @@ export default class MainScene extends Scene {
         this.audio.addNavTap(undoTextBtn);
 
         let restartBtn = this.add.image(0, 0, "restart-btn").setInteractive();
-        restartBtn.displayWidth = 0.6 * this.cameras.main.width;
+        restartBtn.displayWidth = 0.6 * GameGlobal.width;
         restartBtn.displayHeight = this.autoDisplayHeight(restartBtn);
         restartBtn.on("pointerout", () => this.scene.start("MainScene"));
         this.audio.addNavTap(restartBtn);
