@@ -264,7 +264,8 @@ export default class MainScene extends Scene {
 
             wx.setUserCloudStorage({
                 KVDataList: [{
-                    key: "bestRecord",
+                    // key.length <= 8 for targeting to the WeChat hosted rank list
+                    key: "record",
                     value: JSON.stringify({
                         wxgame: {
                             score: this.currentScore,
