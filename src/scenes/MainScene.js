@@ -330,6 +330,10 @@ export default class MainScene extends Scene {
     }
 
     showGameOverModal() {
+        if (!this.undoBtn.chess) {
+            this.undoTextBtn.setVisible(false);
+        }
+
         this.tweens.add({
             targets: this.gameOverModal,
             x: this.gameOverModal.x,
@@ -360,8 +364,8 @@ export default class MainScene extends Scene {
         let graphics = this.add.graphics();
         graphics.fillStyle(0xeadeda, 1);
         graphics.fillRoundedRect(
-            (GameGlobal.width - this.gameOverModal.width) * 0.5,
-            (GameGlobal.height - this.gameOverModal.height) * 0.5,
+            GameGlobal.centerX - this.gameOverModal.width * 0.5,
+            GameGlobal.centerY - this.gameOverModal.height * 0.5,
             this.gameOverModal.width,
             this.gameOverModal.height,
             this.gameOverModal.width * 0.05
@@ -374,24 +378,24 @@ export default class MainScene extends Scene {
         gameOverText.displayHeight = this.autoDisplayHeight(gameOverText);
         gameOverText.setTint(0xff6f69);
 
-        let undoTextBtn = this.add.image(0, -0.2 * this.gameOverModal.height, "undo-text-btn").setInteractive();
-        undoTextBtn.displayWidth = 0.6 * GameGlobal.width;
-        undoTextBtn.displayHeight = this.autoDisplayHeight(undoTextBtn);
-        undoTextBtn.on("pointerout", () => {
+        this.undoTextBtn = this.add.image(0, -0.2 * this.gameOverModal.height, "undo-text-btn").setInteractive();
+        this.undoTextBtn.displayWidth = 0.6 * GameGlobal.width;
+        this.undoTextBtn.displayHeight = this.autoDisplayHeight(this.undoTextBtn);
+        this.undoTextBtn.on("pointerout", () => {
             this.hideGameOverModal();
             this.undoBtn.emit("pointerout");
         });
-        this.audio.addNavTap(undoTextBtn);
+        this.audio.addNavTap(this.undoTextBtn);
 
-        let restartBtn = this.add.image(0, 0, "restart-btn").setInteractive();
-        restartBtn.displayWidth = 0.6 * GameGlobal.width;
-        restartBtn.displayHeight = this.autoDisplayHeight(restartBtn);
-        restartBtn.on("pointerout", () => this.scene.start("MainScene"));
-        this.audio.addNavTap(restartBtn);
+        this.restartBtn = this.add.image(0, 0, "restart-btn").setInteractive();
+        this.restartBtn.displayWidth = 0.6 * GameGlobal.width;
+        this.restartBtn.displayHeight = this.autoDisplayHeight(this.restartBtn);
+        this.restartBtn.on("pointerout", () => this.scene.start("MainScene"));
+        this.audio.addNavTap(this.restartBtn);
 
         this.gameOverModal.add(gameOverModalBackground);
         this.gameOverModal.add(gameOverText);
-        this.gameOverModal.add(undoTextBtn);
-        this.gameOverModal.add(restartBtn);
+        this.gameOverModal.add(this.undoTextBtn);
+        this.gameOverModal.add(this.restartBtn);
     }
 }
