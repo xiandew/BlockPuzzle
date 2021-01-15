@@ -43,7 +43,7 @@ export default class HomeScene extends Scene {
             ).setInteractive();
             continueBtn.displayWidth = 0.6 * GameGlobal.width;
             continueBtn.displayHeight = this.autoDisplayHeight(continueBtn);
-            continueBtn.on("pointerout", () => {
+            continueBtn.on("pointerup", () => {
                 this.scene.stop();
                 this.scene.setVisible(true, "MainScene");
             });
@@ -56,7 +56,7 @@ export default class HomeScene extends Scene {
             ).setInteractive();
             restartBtn.displayWidth = 0.6 * GameGlobal.width;
             restartBtn.displayHeight = this.autoDisplayHeight(restartBtn);
-            restartBtn.on("pointerout", () => {
+            restartBtn.on("pointerup", () => {
                 this.scene.start("MainScene");
             });
             buttons.push(restartBtn);
@@ -68,7 +68,7 @@ export default class HomeScene extends Scene {
             ).setInteractive();
             startBtn.displayWidth = 0.6 * GameGlobal.width;
             startBtn.displayHeight = this.autoDisplayHeight(startBtn);
-            startBtn.on("pointerout", () => {
+            startBtn.on("pointerup", () => {
                 this.scene.start("MainScene");
             });
             buttons.push(startBtn);
@@ -82,7 +82,7 @@ export default class HomeScene extends Scene {
         soundBtn.displayWidth = 0.09 * GameGlobal.width;
         soundBtn.displayHeight = this.autoDisplayHeight(soundBtn);
         let _this = this;
-        soundBtn.on("pointerout", function () {
+        soundBtn.on("pointerup", function () {
             if (_this.audio.bgmOn) {
                 this.setFrame(1);
                 _this.audio.stopBGM();
@@ -115,7 +115,7 @@ export default class HomeScene extends Scene {
             button.on("pointerdown", function () {
                 this.setTint(0xd3d3d3);
             });
-            button.on("pointerout", function () {
+            button.on("pointerup", function () {
                 this.clearTint();
             });
             this.audio.addNavTap(button);

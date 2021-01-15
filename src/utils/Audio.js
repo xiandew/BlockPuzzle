@@ -33,7 +33,7 @@ export default class Audio {
     }
 
     addNavTap(button) {
-        button.on("pointerout", () => {
+        button.on("pointerup", () => {
             if (this.musicOn) {
                 this.navTap.play();
             }
