@@ -187,20 +187,20 @@ export default class MainScene extends Scene {
         this.bestScore.value = bestRecord;
 
         // setup the offscreen canvas for the best score
-        // let sharedCanvas = wx.getOpenDataContext().canvas;
-        // let sharedCanvas.width = GameGlobal.width;
-        // let sharedCanvas.height = GameGlobal.height;
+        let sharedCanvas = wx.getOpenDataContext().canvas;
+        // sharedCanvas.width = GameGlobal.width;
+        // sharedCanvas.height = GameGlobal.height;
 
-        // this.textures.addCanvas("sharedCanvas", sharedCanvas);
-        // this.sharedCanvas = this.add.image(
-        //     GameGlobal.centerX,
-        //     GameGlobal.centerY,
-        //     "sharedCanvas"
-        // );
-        // this.sharedCanvas.displayWidth = GameGlobal.width;
-        // this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
+        if (!this.textures.exists("sharedCanvas")) this.textures.addCanvas("sharedCanvas", sharedCanvas);
+        this.sharedCanvas = this.add.image(
+            GameGlobal.centerX,
+            GameGlobal.centerY,
+            "sharedCanvas"
+        );
+        this.sharedCanvas.displayWidth = GameGlobal.width;
+        this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
 
-        this.createGameOverModal();
+        // this.createGameOverModal();
     }
 
     update() {
