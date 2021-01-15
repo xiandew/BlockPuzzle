@@ -1,11 +1,9 @@
-import Audio from "../utils/Audio";
 import Scene from "./Scene";
 import GameGlobal from "../data/GameGlobal";
 
 export default class HomeScene extends Scene {
     constructor() {
         super("HomeScene");
-        this.audio = Audio.getInstance();
     }
 
     init(data) {

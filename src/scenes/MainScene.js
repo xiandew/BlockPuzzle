@@ -1,13 +1,11 @@
 import Scene from "./Scene";
 import Chess from "./MainScene/Chess";
 import Board from "./MainScene/Board";
-import Audio from "../utils/Audio";
 import GameGlobal from "../data/GameGlobal";
 
 export default class MainScene extends Scene {
     constructor() {
         super("MainScene");
-        this.audio = Audio.getInstance();
     }
 
     preload() {
@@ -186,17 +184,6 @@ export default class MainScene extends Scene {
             bestRecord, 0.05 * GameGlobal.width
         ).setOrigin(0, 0.5);
         this.bestScore.value = bestRecord;
-
-        // setup the offscreen canvas for the best score
-
-        // if (!this.textures.exists("sharedCanvas")) this.textures.addCanvas("sharedCanvas", wx.getOpenDataContext().canvas);
-        // this.sharedCanvas = this.add.image(
-        //     GameGlobal.centerX,
-        //     GameGlobal.centerY,
-        //     "sharedCanvas"
-        // );
-        // this.sharedCanvas.displayWidth = GameGlobal.width;
-        // this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
 
         this.createGameOverModal();
         this.showGameOverModal();
@@ -398,6 +385,7 @@ export default class MainScene extends Scene {
         this.viewLeaderboardBtn = this.add.image(0, 0.2 * this.gameOverModal.height, "view-leaderboard-btn").setInteractive();
         this.viewLeaderboardBtn.displayWidth = 0.6 * GameGlobal.width;
         this.viewLeaderboardBtn.displayHeight = this.autoDisplayHeight(this.viewLeaderboardBtn);
+        this.viewLeaderboardBtn.on("pointerup", () => this.scene.start("RankScene"));
         this.audio.addNavTap(this.viewLeaderboardBtn);
 
         this.gameOverModal.add(gameOverModalBackground);
