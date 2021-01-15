@@ -21,6 +21,7 @@ export default class MainScene extends Scene {
         this.load.image("best-score", "assets/images/best-score.png");
         this.load.image("gameover-text", "assets/images/gameover-text.png");
         this.load.image("undo-text-btn", "assets/images/undo-text-btn.png");
+        this.load.image("view-leaderboard-btn", "assets/images/view-leaderboard-btn.png");
         this.load.bitmapFont(
             "basic-square-7-solid",
             "assets/fonts/bitmap/basic-square-7-solid_0.png",
@@ -32,7 +33,7 @@ export default class MainScene extends Scene {
         this.cameras.main.setBackgroundColor(0xffffff);
 
         this.board = new Board(this);
-        this.loadChesses();
+        this.createChesses();
 
         this.undoBtn = this.add.image(
             GameGlobal.centerX - GameGlobal.width * 0.4,
@@ -44,7 +45,7 @@ export default class MainScene extends Scene {
         this.undoBtn.setTint(0x00c777);
         this.undoBtn.alpha = 0;
         let _this = this;
-        this.undoBtn.on("pointerout", function () {
+        this.undoBtn.on("pointerup", function () {
             if (this.alpha == 1) {
                 if (!this.chess) {
                     return;
@@ -90,7 +91,7 @@ export default class MainScene extends Scene {
             this.chess = chess;
 
             if (!_this.chesses.length) {
-                _this.loadChesses();
+                _this.createChesses();
             }
 
             if (_this.chesses.length == Chess.directions.length) {
@@ -144,7 +145,7 @@ export default class MainScene extends Scene {
         ).setInteractive();
         homeBtn.displayWidth = 0.06 * GameGlobal.width;
         homeBtn.displayHeight = this.autoDisplayHeight(homeBtn);
-        homeBtn.on("pointerout", () => {
+        homeBtn.on("pointerup", () => {
             this.scene.setVisible(false);
             this.scene.launch("HomeScene", { fromMainScene: true });
         });
@@ -187,20 +188,18 @@ export default class MainScene extends Scene {
         this.bestScore.value = bestRecord;
 
         // setup the offscreen canvas for the best score
-        let sharedCanvas = wx.getOpenDataContext().canvas;
-        // sharedCanvas.width = GameGlobal.width;
-        // sharedCanvas.height = GameGlobal.height;
 
-        if (!this.textures.exists("sharedCanvas")) this.textures.addCanvas("sharedCanvas", sharedCanvas);
-        this.sharedCanvas = this.add.image(
-            GameGlobal.centerX,
-            GameGlobal.centerY,
-            "sharedCanvas"
-        );
-        this.sharedCanvas.displayWidth = GameGlobal.width;
-        this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
+        // if (!this.textures.exists("sharedCanvas")) this.textures.addCanvas("sharedCanvas", wx.getOpenDataContext().canvas);
+        // this.sharedCanvas = this.add.image(
+        //     GameGlobal.centerX,
+        //     GameGlobal.centerY,
+        //     "sharedCanvas"
+        // );
+        // this.sharedCanvas.displayWidth = GameGlobal.width;
+        // this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
 
-        // this.createGameOverModal();
+        this.createGameOverModal();
+        this.showGameOverModal();
     }
 
     update() {
@@ -213,7 +212,7 @@ export default class MainScene extends Scene {
         });
     }
 
-    loadChesses() {
+    createChesses() {
         this.chesses = Chess.directions.reverse().map(([dx, dy]) => {
             return new Chess(this, dx, dy);
         });
@@ -333,6 +332,8 @@ export default class MainScene extends Scene {
     showGameOverModal() {
         if (!this.undoBtn.chess) {
             this.undoTextBtn.setVisible(false);
+            this.restartBtn.setPosition(0, -0.2 * this.gameOverModal.height);
+            this.viewLeaderboardBtn.setPosition(0, 0 * this.gameOverModal.height);
         }
 
         this.tweens.add({
@@ -382,21 +383,27 @@ export default class MainScene extends Scene {
         this.undoTextBtn = this.add.image(0, -0.2 * this.gameOverModal.height, "undo-text-btn").setInteractive();
         this.undoTextBtn.displayWidth = 0.6 * GameGlobal.width;
         this.undoTextBtn.displayHeight = this.autoDisplayHeight(this.undoTextBtn);
-        this.undoTextBtn.on("pointerout", () => {
+        this.undoTextBtn.on("pointerup", () => {
             this.hideGameOverModal();
-            this.undoBtn.emit("pointerout");
+            this.undoBtn.emit("pointerup");
         });
         this.audio.addNavTap(this.undoTextBtn);
 
         this.restartBtn = this.add.image(0, 0, "restart-btn").setInteractive();
         this.restartBtn.displayWidth = 0.6 * GameGlobal.width;
         this.restartBtn.displayHeight = this.autoDisplayHeight(this.restartBtn);
-        this.restartBtn.on("pointerout", () => this.scene.start("MainScene"));
+        this.restartBtn.on("pointerup", () => this.scene.start("MainScene"));
         this.audio.addNavTap(this.restartBtn);
+
+        this.viewLeaderboardBtn = this.add.image(0, 0.2 * this.gameOverModal.height, "view-leaderboard-btn").setInteractive();
+        this.viewLeaderboardBtn.displayWidth = 0.6 * GameGlobal.width;
+        this.viewLeaderboardBtn.displayHeight = this.autoDisplayHeight(this.viewLeaderboardBtn);
+        this.audio.addNavTap(this.viewLeaderboardBtn);
 
         this.gameOverModal.add(gameOverModalBackground);
         this.gameOverModal.add(gameOverText);
         this.gameOverModal.add(this.undoTextBtn);
         this.gameOverModal.add(this.restartBtn);
+        this.gameOverModal.add(this.viewLeaderboardBtn);
     }
 }
