@@ -85,14 +85,21 @@ export default class RankScene extends Scene {
         }));
 
 
-        // if (!this.textures.exists("shared-canvas")) this.textures.addCanvas("shared-canvas", wx.getOpenDataContext().canvas);
-        // this.sharedCanvas = this.add.image(
-        //     GameGlobal.centerX,
-        //     GameGlobal.centerY,
-        //     "shared-canvas"
-        // );
-        // this.sharedCanvas.displayWidth = GameGlobal.width;
-        // this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
+        if (!this.textures.exists("shared-canvas")) this.textures.addCanvas("shared-canvas", wx.getOpenDataContext().canvas);
+        this.sharedCanvas = this.add.image(
+            GameGlobal.centerX,
+            GameGlobal.centerY,
+            "shared-canvas"
+        );
+        this.sharedCanvas.displayWidth = GameGlobal.width;
+        this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
+
+        this.triggerTimer = this.time.addEvent({
+            callback: () => this.sharedCanvas.frame.texture.refresh(),
+            callbackScope: this,
+            delay: 300,
+            loop: true
+        });
     }
 
     update() { }

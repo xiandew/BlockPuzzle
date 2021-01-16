@@ -171,7 +171,15 @@ export default class MainScene extends Scene {
             let data = wx.getStorageSync("data")
             if (data) {
                 data = JSON.parse(data);
-                if (data.bestRecord) bestRecord = data.bestRecord;
+                if (data.bestRecord) {
+                    bestRecord = data.bestRecord;
+
+                    // Make sure the best record in the local storage is synced
+                    wx.getOpenDataContext().postMessage({
+                        action: "RankScene",
+                        score: bestRecord
+                    });
+                }
             }
         } catch (e) {
             console.error(e);
@@ -186,7 +194,6 @@ export default class MainScene extends Scene {
         this.bestScore.value = bestRecord;
 
         this.createGameOverModal();
-        this.showGameOverModal();
     }
 
     update() {
@@ -240,25 +247,17 @@ export default class MainScene extends Scene {
             this.bestScore.value = this.currentScore.value;
             this.bestScore.text = this.currentScore.text;
 
+            wx.getOpenDataContext().postMessage({
+                action: "RankScene",
+                score: this.currentScore.value
+            });
+
             wx.setStorage({
                 key: "data",
                 data: JSON.stringify({
                     bestRecord: this.currentScore.value,
                     lastUpdate: new Date().getTime()
                 })
-            });
-
-            wx.setUserCloudStorage({
-                KVDataList: [{
-                    // key.length <= 8 for targeting to the WeChat hosted rank list
-                    key: "record",
-                    value: JSON.stringify({
-                        wxgame: {
-                            score: this.currentScore,
-                            update_time: new Date().getTime()
-                        }
-                    })
-                }]
             });
         }
 
