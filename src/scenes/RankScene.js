@@ -1,18 +1,95 @@
 import Scene from "./Scene";
+import GameGlobal from "../data/GameGlobal";
 
 export default class RankScene extends Scene {
     constructor() {
         super("RankScene");
     }
 
-    preload() { }
+    preload() {
+        this.load.image("return-btn", "assets/images/return-btn.png");
+    }
 
     create() {
-        // if (!this.textures.exists("sharedCanvas")) this.textures.addCanvas("sharedCanvas", wx.getOpenDataContext().canvas);
+        this.cameras.main.setBackgroundColor(0xffffff);
+
+        let headerBg = wx.createCanvas();
+        headerBg.width = GameGlobal.width;
+        headerBg.height = GameGlobal.centerY - 0.22 * GameGlobal.height;
+        let headerBgCtx = headerBg.getContext("2d");
+        headerBgCtx.fillStyle = "#00c777";
+        headerBgCtx.fillRect(0, 0, headerBg.width, headerBg.height);
+
+        headerBgCtx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        headerBgCtx.beginPath();
+        headerBgCtx.moveTo(0, headerBg.height * 0.53);
+        headerBgCtx.quadraticCurveTo(headerBg.width * 0.5, headerBg.height * 0.78, headerBg.width, headerBg.height * 0.53);
+        headerBgCtx.lineTo(headerBg.width, headerBg.height);
+        headerBgCtx.lineTo(0, headerBg.height);
+        headerBgCtx.closePath();
+        headerBgCtx.fill();
+        if (!this.textures.exists("lb-header-bg")) this.textures.addCanvas("lb-header-bg", headerBg);
+        this.add.image(
+            headerBg.width * 0.5,
+            headerBg.height * 0.5,
+            "lb-header-bg"
+        );
+
+        let headerFontSize = 0.03 * GameGlobal.height;
+        let header = this.add.text(
+            GameGlobal.centerX,
+            GameGlobal.centerY - 0.45 * GameGlobal.height,
+            "排行榜",
+            { font: headerFontSize + "px Arial", fill: "#fff" }
+        ).setOrigin(0.5);
+
+        let returnBtn = this.add.image(
+            GameGlobal.centerX - 0.42 * GameGlobal.width,
+            header.y,
+            "return-btn"
+        );
+        returnBtn.displayWidth = 0.025 * GameGlobal.width;
+        returnBtn.displayHeight = this.autoDisplayHeight(returnBtn);
+
+        let tabFontSize = headerFontSize * 0.85;
+        let tabThisWeek = this.add.text(
+            GameGlobal.centerX - 0.2 * GameGlobal.width,
+            GameGlobal.centerY - 0.38 * GameGlobal.height,
+            "本周",
+            { font: tabFontSize + "px Arial", fill: "#fff" }
+        ).setOrigin(0.5).setInteractive();
+
+        let tabBestRecord = this.add.text(
+            GameGlobal.centerX + 0.2 * GameGlobal.width,
+            GameGlobal.centerY - 0.38 * GameGlobal.height,
+            "最高分",
+            { font: tabFontSize + "px Arial", fill: "#fff" }
+        ).setOrigin(0.5).setInteractive();
+
+        let graphics = this.add.graphics();
+        let tabBarHeight = tabFontSize * 0.25;
+        let tabBarWidth = tabFontSize * 5;
+        graphics.lineStyle(tabBarHeight, 0xffffff, 1);
+        graphics.lineBetween(0, 0, tabBarWidth, 0);
+        graphics.generateTexture("tab-bar", tabBarWidth, tabBarHeight);
+        graphics.destroy();
+        let tabBar = this.add.sprite(tabThisWeek.x, tabThisWeek.y + tabFontSize, "tab-bar").setOrigin(0.5);
+
+        [tabThisWeek, tabBestRecord].forEach((tab) => tab.on("pointerup", function () {
+            this.scene.tweens.add({
+                targets: tabBar,
+                x: this.x,
+                duration: 400,
+                ease: "Power2"
+            });
+        }));
+
+
+        // if (!this.textures.exists("shared-canvas")) this.textures.addCanvas("shared-canvas", wx.getOpenDataContext().canvas);
         // this.sharedCanvas = this.add.image(
         //     GameGlobal.centerX,
         //     GameGlobal.centerY,
-        //     "sharedCanvas"
+        //     "shared-canvas"
         // );
         // this.sharedCanvas.displayWidth = GameGlobal.width;
         // this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
