@@ -41,6 +41,10 @@ export default class Main extends Phaser.Game {
         let sharedCanvas = wx.getOpenDataContext().canvas;
         sharedCanvas.width = GameGlobal.width;
         sharedCanvas.height = GameGlobal.height;
+
+        wx.getOpenDataContext().postMessage({
+            action: "Main"
+        });
     }
 }
 
@@ -50,7 +54,7 @@ wx.showShareMenu({
 
 wx.onShareAppMessage(() => {
     return {
-        title: "方块拼图，七拼八凑",
+        title: "方块拼图，妙趣横生",
         imageUrl: "assets/images/share.jpg"
     }
 });

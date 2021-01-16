@@ -17,7 +17,7 @@ class Main {
                 // TODO drawLoading()
 
                 if (!msg.score) {
-                    return; // TODO loadRecords();
+                    return this.loadRecords();
                 }
 
                 wx.getUserCloudStorage({
@@ -80,7 +80,7 @@ class Main {
             );
         });
 
-        this.loadRecords();
+        this.avatars = {};
     }
 
     loadRecords(reload = false) {
@@ -107,7 +107,7 @@ class Main {
     drawRecords() {
         if (!DataStore.userInfo) {
             return wx.getUserInfo({
-                openIdList: ['selfOpenId'],
+                openIdList: ["selfOpenId"],
                 success: (res) => {
                     [DataStore.userInfo] = res.data;
                     this.drawRecords();
@@ -116,27 +116,45 @@ class Main {
         }
 
         let thisMonday = Week.getThisMonday().getTime();
-        // TODO rm `true || `
-        let friends = DataStore.friendCloudStorage.filter(f => true || f.record.wkRecord && f.record.wkRecord.update_time >= thisMonday);
-        friends.sort((f1, f2) => f2.record.wkRecord.score - f1.record.wkRecord.score);
+        let friends = DataStore.friendCloudStorage.filter((f) => f.record.wkRecord && f.record.wkRecord.update_time >= thisMonday);
+        friends.sort((f1, f2) => {
+            return f2.record.wkRecord.score - f1.record.wkRecord.score
+                || f1.record.wkRecord.update_time - f2.record.wkRecord.update_time;
+        });
 
         friends.forEach((f, i) => f.rank = i + 1);
-        // friends.unshift(friends.find((f) => f.nickname == DataStore.userInfo.nickName && f.avatarUrl == DataStore.userInfo.avatarUrl));
+        let myself = friends.find((f) => f.nickname == DataStore.userInfo.nickName && f.avatarUrl == DataStore.userInfo.avatarUrl);
+        if (!myself) {
+            myself = {
+                rank: friends.length,
+                avatarUrl: DataStore.userInfo.avatarUrl,
+                nickname: DataStore.userInfo.nickName,
+                record: {
+                    wxgame: { score: 0 },
+                    wkRecord: { score: 0 }
+                }
+            };
+        }
 
         this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
         if (!friends.length) return this.drawNoRecords();
 
-        let grid = new Grid(0, 0.12 * this.leaderboardCanvas.height, 0, 0.06 * DataStore.canvasWidth, 0, 0.06 * DataStore.canvasWidth, this.leaderboardCanvas.width);
-        this.leaderboardCanvas.height = Math.max(this.leaderboardCanvas.height, grid.height * friends.length);
+        let grid = new Grid(0, 0.12 * this.leaderboardCanvas.height, 0.075 * DataStore.canvasWidth, 0.06 * DataStore.canvasWidth);
+        grid.fontSize = 0.25 * grid.height;
+        grid.avatarSize = 0.6 * grid.height;
+        grid.top = 0.194 * DataStore.canvasHeight;
+        grid.mid = grid.top + 0.5 * grid.height;
+        this.drawRecord(this.ctx, grid, myself, true);
 
+        grid = new Grid(0, 0.12 * this.leaderboardCanvas.height, 0, 0.06 * DataStore.canvasWidth, 0, 0.06 * DataStore.canvasWidth, this.leaderboardCanvas.width);
+        grid.fontSize = 0.25 * grid.height;
+        grid.avatarSize = 0.6 * grid.height;
+        this.leaderboardCanvas.height = Math.max(this.leaderboardCanvas.height, grid.height * friends.length);
         friends.forEach((friend, i) => {
-            grid.top = i * grid.height;
+            grid.top = i * grid.height * 1.1 + grid.height * 0.2;
             grid.mid = grid.top + 0.5 * grid.height;
-            grid.fontSize = 0.25 * grid.height;
-            grid.avatarSize = 0.6 * grid.height;
 
             this.leaderboardContext.fillStyle = "rgba(255, 255, 255, 0)";
-            grid.draw(this.leaderboardContext, 0, true, false);
             this.drawRecord(this.leaderboardContext, grid, friend);
         });
 
@@ -144,20 +162,20 @@ class Main {
         this.render();
     }
 
-    drawRecord(ctx, grid, friend) {
+    drawRecord(ctx, grid, friend, isMyself = false) {
         // Draw the rank
         ctx.fillStyle = "#000000"
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        new Text(friend.rank).draw(ctx, grid.pl, grid.mid, `${grid.fontSize}px Arial`);
+        new Text(friend.rank).draw(ctx, grid.ml + grid.pl, grid.mid, `${grid.fontSize}px Arial`);
 
         // Draw the avatar
         let avatar = wx.createImage();
         avatar.y = grid.mid;
-        avatar.x = 1.65 * grid.pl + 0.5 * grid.avatarSize;
+        avatar.x = grid.ml + 1.65 * grid.pl + 0.5 * grid.avatarSize;
 
         // Draw the first place icon bg
-        if (friend.rank == 1) {
+        if (!isMyself && friend.rank == 1) {
             new Sprite(this.assets.get("firstPlaceBg"), avatar.x + 0.35 * grid.avatarSize, avatar.y - 0.5 * grid.avatarSize, 0.4 * grid.avatarSize).render(ctx);
         }
 
@@ -170,39 +188,48 @@ class Main {
             if (clip) ctx.clip();
         }
 
-        drawAvatarBg();
-        avatar.onload = () => {
+        if (friend.avatarUrl in this.avatars) {
             drawAvatarBg(true);
-            new Sprite(avatar, avatar.x, avatar.y, grid.avatarSize, grid.avatarSize).render(ctx);
-            // Refresh the shared canvas
-            this.render();
+            this.avatars[friend.avatarUrl].render(ctx);
+        } else {
+            drawAvatarBg();
+            avatar.onload = () => {
+                drawAvatarBg(true);
+                this.avatars[avatar.src] = new Sprite(avatar, avatar.x, avatar.y, grid.avatarSize, grid.avatarSize);
+                this.avatars[avatar.src].render(ctx);
+                // Refresh the shared canvas
+                this.render();
+            }
+            avatar.src = friend.avatarUrl;
         }
-        avatar.src = friend.avatarUrl;
 
         // Draw the rank background
-        ctx.globalCompositeOperation = 'destination-over';
-        ctx.strokeStyle = "#efca7f";
-        ctx.beginPath();
-        ctx.lineCap = "round";
-        ctx.lineWidth = grid.fontSize * 1.5;
-        ctx.moveTo(grid.pl - grid.fontSize * 0.5, grid.mid);
-        ctx.lineTo(avatar.x, avatar.y);
-        ctx.stroke();
-        ctx.globalCompositeOperation = 'source-over';
+        if (!isMyself && friend.rank <= 3) {
+            ctx.globalCompositeOperation = "destination-over";
+            ctx.strokeStyle = "#efca7f";
+            ctx.beginPath();
+            ctx.lineCap = "round";
+            ctx.lineWidth = grid.fontSize * 1.5;
+            ctx.moveTo(grid.ml + grid.pl - grid.fontSize * 0.5, grid.mid);
+            ctx.lineTo(avatar.x, avatar.y);
+            ctx.stroke();
+            ctx.globalCompositeOperation = "source-over";
+        }
 
         // Draw the score, use the start x of the score to truncate long nicknames
-        let scoreStartX = this.bitmapText.draw(ctx, friend.record.wkRecord.score, 0.3 * grid.height, grid.width - grid.pr, grid.mid - 0.15 * grid.height, "right");
+        let scoreEndX = grid.width + grid.ml - grid.pr;
+        let scoreStartX = this.bitmapText.draw(ctx, friend.record.wkRecord.score, 0.3 * grid.height, scoreEndX, grid.mid - 0.15 * grid.height, "right");
         let nicknameEndX = scoreStartX - grid.pl;
         let nicknameStartX = avatar.x + grid.avatarSize;
 
-        ctx.globalCompositeOperation = 'source-atop';
-        ctx.fillStyle = friend.rank == 1 ? '#fa7e00' : friend.rank == 2 ? '#fec11e' : friend.rank == 3 ? '#fbd413' : '#888888';
-        ctx.fillRect(scoreStartX, 0.35 * grid.height, grid.width - grid.pr - scoreStartX, 0.3 * grid.height);
-        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalCompositeOperation = "source-atop";
+        ctx.fillStyle = isMyself ? "#ffffff" : friend.rank <= 3 ? "#fa7e00" : "#50a3ec";
+        ctx.fillRect(scoreStartX, grid.top + 0.35 * grid.height, scoreEndX - scoreStartX, 0.3 * grid.height);
+        ctx.globalCompositeOperation = "source-over";
 
         // Draw the nickname
-        ctx.fillStyle = '#000000';
-        ctx.textAlign = 'left';
+        ctx.fillStyle = "#000000";
+        ctx.textAlign = "left";
         new Text(friend.nickname, grid.fontSize).drawOverflowEllipsis(ctx, nicknameStartX, grid.mid, nicknameEndX - nicknameStartX);
     }
 
@@ -215,4 +242,8 @@ class Main {
 
 }
 
-new Main();
+wx.onMessage((msg) => {
+    if (msg.action === "Main") {
+        new Main();
+    }
+});

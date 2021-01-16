@@ -84,6 +84,9 @@ export default class RankScene extends Scene {
             });
         }));
 
+        wx.getOpenDataContext().postMessage({
+            action: "RankScene"
+        });
 
         if (!this.textures.exists("shared-canvas")) this.textures.addCanvas("shared-canvas", wx.getOpenDataContext().canvas);
         this.sharedCanvas = this.add.image(
