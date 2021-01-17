@@ -79,8 +79,6 @@ class Main {
                 this.leaderboardCanvas.height
             );
         });
-
-        this.avatars = {};
     }
 
     loadRecords(reload = false) {
@@ -146,7 +144,8 @@ class Main {
         grid.mid = grid.top + 0.5 * grid.height;
         this.drawRecord(this.ctx, grid, myself, true);
 
-        grid = new Grid(0, 0.12 * this.leaderboardCanvas.height, 0, 0.06 * DataStore.canvasWidth, 0, 0.06 * DataStore.canvasWidth, this.leaderboardCanvas.width);
+        grid.ml = grid.mr = 0;
+        grid.width = this.leaderboardCanvas.width;
         grid.fontSize = 0.25 * grid.height;
         grid.avatarSize = 0.6 * grid.height;
         this.leaderboardCanvas.height = Math.max(this.leaderboardCanvas.height, grid.height * friends.length);
@@ -167,7 +166,9 @@ class Main {
         ctx.fillStyle = "#000000"
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        new Text(friend.rank).draw(ctx, grid.ml + grid.pl, grid.mid, `${grid.fontSize}px Arial`);
+        if (friend.rank) {
+            new Text(friend.rank).draw(ctx, grid.ml + grid.pl, grid.mid, `${grid.fontSize}px Arial`);
+        }
 
         // Draw the avatar
         let avatar = wx.createImage();
@@ -188,19 +189,20 @@ class Main {
             if (clip) ctx.clip();
         }
 
-        if (friend.avatarUrl in this.avatars) {
+
+        drawAvatarBg();
+        avatar.onload = () => {
+            ctx.save();
             drawAvatarBg(true);
-            this.avatars[friend.avatarUrl].render(ctx);
-        } else {
-            drawAvatarBg();
-            avatar.onload = () => {
-                drawAvatarBg(true);
-                this.avatars[avatar.src] = new Sprite(avatar, avatar.x, avatar.y, grid.avatarSize, grid.avatarSize);
-                this.avatars[avatar.src].render(ctx);
-                // Refresh the shared canvas
-                this.render();
-            }
-            avatar.src = friend.avatarUrl;
+            new Sprite(avatar, avatar.x, avatar.y, grid.avatarSize, grid.avatarSize).render(ctx);
+            ctx.restore();
+            // Refresh the shared canvas
+            this.render();
+        }
+        avatar.src = friend.avatarUrl;
+        // Make sure onload() is triggered if the avatar is already cached
+        if (avatar.complete) {
+            avatar.onload();
         }
 
         // Draw the rank background
@@ -231,6 +233,18 @@ class Main {
         ctx.fillStyle = "#000000";
         ctx.textAlign = "left";
         new Text(friend.nickname, grid.fontSize).drawOverflowEllipsis(ctx, nicknameStartX, grid.mid, nicknameEndX - nicknameStartX);
+    }
+
+    drawNoRecords() {
+        this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
+        this.leaderboardContext.fillStyle = "#888888";
+        this.leaderboardContext.textAlign = "center";
+        new Text(
+            "这周还没有好友玩过，快分享出去吧",
+            this.leaderboardCanvas.height * 0.03,
+            this.leaderboardCanvas.height
+        ).draw(this.leaderboardContext, 0.5 * this.leaderboardCanvas.width, 0.5 * this.leaderboardCanvas.height);
+        this.render();
     }
 
     render(sy = 0) {

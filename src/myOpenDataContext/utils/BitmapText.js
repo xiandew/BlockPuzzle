@@ -5,7 +5,7 @@ export default class BitmapText {
 
     // Only for drawing a single line of numbers and not support the font colour option
     draw(ctx, text, fontSize = 0, x = 0, y = 0, textAlign = "left") {
-        if (!text) return;
+        if (!(typeof text === "number" || typeof text === "string")) return;
 
         let fontScale = fontSize / this.bitmapFont.defaultSize;
         let charArr = text.toString().split("");
