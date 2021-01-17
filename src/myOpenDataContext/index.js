@@ -57,6 +57,19 @@ class Main {
                 this.onMessage(msg);
             });
         });
+
+        this.sy = 0;
+        wx.onTouchStart(e => {
+            this.startY = this.sy + e.touches[0].clientY;
+        });
+        wx.onTouchMove(e => {
+            this.sy = this.startY - e.touches[0].clientY;
+            this.render(this.sy);
+        });
+        wx.onTouchEnd(e => {
+            this.sy = ((arr) => { arr.sort((a, b) => { return a - b; }); return arr })([0, this.sy, this.leaderboardCanvas.height - this.leaderboardSprite.height])[1];
+            this.render(this.sy);
+        });
     }
 
     onMessage(msg) {
@@ -71,11 +84,11 @@ class Main {
                     return;
                 } else {
                     this.activeTab = msg.tab === "thisWeek" ? Main.Tab.THISWEEK : Main.Tab.BESTRECORD;
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    this.myRankContext.clearRect(0, 0, this.myRankCanvas.width, this.myRankCanvas.height);
-                    this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
                 }
             }
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.myRankContext.clearRect(0, 0, this.myRankCanvas.width, this.myRankCanvas.height);
+            this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
             this.drawLoading();
 
             if (!msg.score) {
