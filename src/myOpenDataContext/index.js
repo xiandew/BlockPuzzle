@@ -10,51 +10,8 @@ import Week from "./utils/Week";
 
 class Main {
     constructor() {
-        wx.onMessage((msg) => {
-            const action = msg.action;
-
-            if (action === "RankScene") {
-                // TODO drawLoading()
-
-                if (!msg.score) {
-                    return this.loadRecords();
-                }
-
-                wx.getUserCloudStorage({
-                    keyList: ["record"],
-                    success: res => {
-                        let record = res.KVDataList.find(KVData => KVData.key === "record");
-                        if (record) record = JSON.parse(record.value);
-                        let now = new Date();
-                        if (!record || !record.wkRecord) {
-                            record = { wxgame: {}, wkRecord: {} };
-                        }
-
-                        // Update week record
-                        if (
-                            !record.wkRecord.update_time || record.wkRecord.update_time < Week.getThisMonday().getTime() ||
-                            !record.wkRecord.score || msg.score > record.wkRecord.score
-                        ) {
-                            record.wkRecord.score = msg.score;
-                            record.wkRecord.update_time = now.getTime();
-                        }
-
-                        // Update max record
-                        if (!record.wxgame.score || record.wxgame.score < record.wkRecord.score) {
-                            record.wxgame.score = record.wkRecord.score;
-                            record.wxgame.update_time = now.getTime();
-                        }
-
-                        wx.setUserCloudStorage({
-                            KVDataList: [{ key: "record", value: JSON.stringify(record) }],
-                            success: () => {
-                                this.loadRecords(true);
-                            }
-                        });
-                    }
-                });
-            }
-        });
+        this.messageQueue = [];
+        wx.onMessage(this.onMessage.bind(this));
 
         AssetsLoader.getInstance().onLoaded((assets) => {
             this.assets = assets;
@@ -78,7 +35,73 @@ class Main {
                 this.leaderboardCanvas.width,
                 this.leaderboardCanvas.height
             );
+
+            // Canvas for my rank
+            this.myRankCanvas = wx.createCanvas();
+            this.myRankContext = this.myRankCanvas.getContext("2d");
+            this.myRankCanvas.width = this.leaderboardCanvas.width;
+            this.myRankCanvas.height = 0.12 * this.leaderboardCanvas.height;
+            this.myRankSprite = new Sprite(
+                this.myRankCanvas,
+                this.leaderboardSprite.x,
+                0.194 * DataStore.canvasHeight + 0.5 * this.myRankCanvas.height,
+                this.myRankCanvas.width,
+                this.myRankCanvas.height
+            );
+
+            this.messageQueue.forEach((msg) => {
+                this.onMessage(msg);
+            });
         });
+    }
+
+    onMessage(msg) {
+        if (!this.assets) {
+            return this.messageQueue.push(msg);
+        }
+
+        const action = msg.action;
+        if (action === "RankScene") {
+            this.drawLoading();
+
+            if (!msg.score) {
+                return this.loadRecords();
+            }
+
+            wx.getUserCloudStorage({
+                keyList: ["record"],
+                success: res => {
+                    let record = res.KVDataList.find(KVData => KVData.key === "record");
+                    if (record) record = JSON.parse(record.value);
+                    let now = new Date();
+                    if (!record || !record.wkRecord) {
+                        record = { wxgame: {}, wkRecord: {} };
+                    }
+
+                    // Update week record
+                    if (
+                        !record.wkRecord.update_time || record.wkRecord.update_time < Week.getThisMonday().getTime() ||
+                        !record.wkRecord.score || msg.score > record.wkRecord.score
+                    ) {
+                        record.wkRecord.score = msg.score;
+                        record.wkRecord.update_time = now.getTime();
+                    }
+
+                    // Update max record
+                    if (!record.wxgame.score || record.wxgame.score < record.wkRecord.score) {
+                        record.wxgame.score = record.wkRecord.score;
+                        record.wxgame.update_time = now.getTime();
+                    }
+
+                    wx.setUserCloudStorage({
+                        KVDataList: [{ key: "record", value: JSON.stringify(record) }],
+                        success: () => {
+                            this.loadRecords(true);
+                        }
+                    });
+                }
+            });
+        }
     }
 
     loadRecords(reload = false) {
@@ -113,6 +136,8 @@ class Main {
             });
         }
 
+        clearInterval(this.loadingIntervalId);
+
         let thisMonday = Week.getThisMonday().getTime();
         let friends = DataStore.friendCloudStorage.filter((f) => f.record.wkRecord && f.record.wkRecord.update_time >= thisMonday);
         friends.sort((f1, f2) => {
@@ -134,20 +159,15 @@ class Main {
             };
         }
 
-        this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
         if (!friends.length) return this.drawNoRecords();
 
-        let grid = new Grid(0, 0.12 * this.leaderboardCanvas.height, 0.075 * DataStore.canvasWidth, 0.06 * DataStore.canvasWidth);
+        let grid = new Grid(0, this.myRankCanvas.height, 0, 0.06 * DataStore.canvasWidth, 0, 0.06 * DataStore.canvasWidth, this.myRankCanvas.width);
         grid.fontSize = 0.25 * grid.height;
         grid.avatarSize = 0.6 * grid.height;
-        grid.top = 0.194 * DataStore.canvasHeight;
         grid.mid = grid.top + 0.5 * grid.height;
-        this.drawRecord(this.ctx, grid, myself, true);
+        this.drawRecord(this.myRankContext, grid, myself, true);
 
-        grid.ml = grid.mr = 0;
-        grid.width = this.leaderboardCanvas.width;
-        grid.fontSize = 0.25 * grid.height;
-        grid.avatarSize = 0.6 * grid.height;
+        this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
         this.leaderboardCanvas.height = Math.max(this.leaderboardCanvas.height, grid.height * friends.length);
         friends.forEach((friend, i) => {
             grid.top = i * grid.height * 1.1 + grid.height * 0.2;
@@ -235,6 +255,29 @@ class Main {
         new Text(friend.nickname, grid.fontSize).drawOverflowEllipsis(ctx, nicknameStartX, grid.mid, nicknameEndX - nicknameStartX);
     }
 
+    drawLoading() {
+        this.leaderboardContext.fillStyle = "#888888";
+        this.leaderboardContext.textAlign = "center";
+
+        let draw = (text) => {
+            this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
+            new Text(
+                text,
+                this.leaderboardCanvas.height * 0.03,
+                this.leaderboardCanvas.height
+            ).draw(this.leaderboardContext, 0.5 * this.leaderboardCanvas.width, 0.5 * this.leaderboardCanvas.height);
+            this.render();
+        };
+        draw("加载中");
+
+        // Animate the dots
+        let nDots = 0;
+        this.loadingIntervalId = setInterval(() => {
+            nDots = (nDots + 1) % 4;
+            draw("加载中" + [...new Array(nDots).keys()].map(() => ".").join(""));
+        }, 400);
+    }
+
     drawNoRecords() {
         this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
         this.leaderboardContext.fillStyle = "#888888";
@@ -249,8 +292,8 @@ class Main {
 
     render(sy = 0) {
         // if (DataStore.currentScene !== RankScene.toString()) return;
-        // super.render();
-        // this.sprite.render(DataStore.ctx);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.myRankSprite.render(this.ctx);
         this.leaderboardSprite.renderCrop(this.ctx, 0, sy, this.leaderboardCanvas.width, this.leaderboardSprite.height);
     }
 
