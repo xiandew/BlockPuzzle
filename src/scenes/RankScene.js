@@ -22,8 +22,8 @@ export default class RankScene extends Scene {
 
         headerBgCtx.fillStyle = "rgba(255, 255, 255, 0.5)";
         headerBgCtx.beginPath();
-        headerBgCtx.moveTo(0, headerBg.height * 0.53);
-        headerBgCtx.quadraticCurveTo(headerBg.width * 0.5, headerBg.height * 0.78, headerBg.width, headerBg.height * 0.53);
+        headerBgCtx.moveTo(0, headerBg.height * 0.6);
+        headerBgCtx.quadraticCurveTo(headerBg.width * 0.5, headerBg.height * 0.78, headerBg.width, headerBg.height * 0.6);
         headerBgCtx.lineTo(headerBg.width, headerBg.height);
         headerBgCtx.lineTo(0, headerBg.height);
         headerBgCtx.closePath();
@@ -58,6 +58,7 @@ export default class RankScene extends Scene {
             "本周",
             { font: tabFontSize + "px Arial", fill: "#fff" }
         ).setOrigin(0.5).setInteractive();
+        tabThisWeek.tab = "thisWeek";
 
         let tabBestRecord = this.add.text(
             GameGlobal.centerX + 0.2 * GameGlobal.width,
@@ -65,6 +66,7 @@ export default class RankScene extends Scene {
             "最高分",
             { font: tabFontSize + "px Arial", fill: "#fff" }
         ).setOrigin(0.5).setInteractive();
+        tabBestRecord.tab = "bestRecord";
 
         let graphics = this.add.graphics();
         let tabBarHeight = tabFontSize * 0.25;
@@ -76,6 +78,10 @@ export default class RankScene extends Scene {
         let tabBar = this.add.sprite(tabThisWeek.x, tabThisWeek.y + tabFontSize, "tab-bar").setOrigin(0.5);
 
         [tabThisWeek, tabBestRecord].forEach((tab) => tab.on("pointerup", function () {
+            wx.getOpenDataContext().postMessage({
+                action: "RankScene",
+                tab: this.tab
+            });
             this.scene.tweens.add({
                 targets: tabBar,
                 x: this.x,

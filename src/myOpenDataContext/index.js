@@ -9,6 +9,10 @@ import Text from "./utils/Text";
 import Week from "./utils/Week";
 
 class Main {
+    static Tab = class {
+        static THISWEEK = 1;
+        static BESTRECORD = 2;
+    };
     constructor() {
         this.messageQueue = [];
         wx.onMessage(this.onMessage.bind(this));
@@ -62,6 +66,16 @@ class Main {
 
         const action = msg.action;
         if (action === "RankScene") {
+            if (msg.tab) {
+                if (msg.tab === this.activeTab) {
+                    return;
+                } else {
+                    this.activeTab = msg.tab === "thisWeek" ? Main.Tab.THISWEEK : Main.Tab.BESTRECORD;
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.myRankContext.clearRect(0, 0, this.myRankCanvas.width, this.myRankCanvas.height);
+                    this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
+                }
+            }
             this.drawLoading();
 
             if (!msg.score) {
@@ -112,7 +126,7 @@ class Main {
                     DataStore.friendCloudStorage = res.data.map((e) => {
                         let record = e.KVDataList.find(kv => kv.key === "record");
                         if (record) {
-                            e.record = JSON.parse(record.value);
+                            e._record = JSON.parse(record.value);
                         } else {
                             return null;
                         }
@@ -138,11 +152,19 @@ class Main {
 
         clearInterval(this.loadingIntervalId);
 
-        let thisMonday = Week.getThisMonday().getTime();
-        let friends = DataStore.friendCloudStorage.filter((f) => f.record.wkRecord && f.record.wkRecord.update_time >= thisMonday);
+        let friends = DataStore.friendCloudStorage;
+        if (this.activeTab == Main.Tab.BESTRECORD) {
+            friends.forEach((f) => f.record = f._record.wxgame);
+        } else {
+            friends.forEach((f) => f.record = f._record.wkRecord);
+
+            let thisMonday = Week.getThisMonday().getTime();
+            friends = friends.filter((f) => f.record && f.record.update_time >= thisMonday);
+        }
+
         friends.sort((f1, f2) => {
-            return f2.record.wkRecord.score - f1.record.wkRecord.score
-                || f1.record.wkRecord.update_time - f2.record.wkRecord.update_time;
+            return f2.record.score - f1.record.score
+                || f1.record.update_time - f2.record.update_time;
         });
 
         friends.forEach((f, i) => f.rank = i + 1);
@@ -152,10 +174,7 @@ class Main {
                 rank: friends.length,
                 avatarUrl: DataStore.userInfo.avatarUrl,
                 nickname: DataStore.userInfo.nickName,
-                record: {
-                    wxgame: { score: 0 },
-                    wkRecord: { score: 0 }
-                }
+                record: { score: 0 }
             };
         }
 
@@ -240,7 +259,7 @@ class Main {
 
         // Draw the score, use the start x of the score to truncate long nicknames
         let scoreEndX = grid.width + grid.ml - grid.pr;
-        let scoreStartX = this.bitmapText.draw(ctx, friend.record.wkRecord.score, 0.3 * grid.height, scoreEndX, grid.mid - 0.15 * grid.height, "right");
+        let scoreStartX = this.bitmapText.draw(ctx, friend.record.score, 0.3 * grid.height, scoreEndX, grid.mid - 0.15 * grid.height, "right");
         let nicknameEndX = scoreStartX - grid.pl;
         let nicknameStartX = avatar.x + grid.avatarSize;
 
