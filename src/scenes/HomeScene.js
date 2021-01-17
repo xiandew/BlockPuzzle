@@ -15,9 +15,10 @@ export default class HomeScene extends Scene {
         this.load.image("start-btn", "assets/images/start-btn.png");
         this.load.image("continue-btn", "assets/images/continue-btn.png");
         this.load.image("restart-btn", "assets/images/restart-btn.png");
+        this.load.image("view-leaderboard-icon-btn", "assets/images/view-leaderboard-icon-btn.png");
 
-        this.load.spritesheet("sound-sheet", "assets/images/sound-sheet.png", { frameWidth: 140, frameHeight: 132 });
-        this.load.spritesheet("music-sheet", "assets/images/music-sheet.png", { frameWidth: 130, frameHeight: 122 });
+        this.load.spritesheet("sound-sheet", "assets/images/sound-sheet.png", { frameWidth: 60.5, frameHeight: 60 });
+        this.load.spritesheet("music-sheet", "assets/images/music-sheet.png", { frameWidth: 59.5, frameHeight: 60 });
     }
 
     create() {
@@ -74,7 +75,7 @@ export default class HomeScene extends Scene {
         }
 
         let soundBtn = this.add.sprite(
-            GameGlobal.centerX - GameGlobal.width * 0.1,
+            GameGlobal.centerX - GameGlobal.width * 0.15,
             GameGlobal.centerY + GameGlobal.height * 0.25,
             "sound-sheet", this.audio.bgmOn ? 0 : 1
         ).setInteractive();
@@ -93,7 +94,7 @@ export default class HomeScene extends Scene {
         buttons.push(soundBtn);
 
         let musicBtn = this.add.sprite(
-            GameGlobal.centerX + GameGlobal.width * 0.1,
+            GameGlobal.centerX,
             GameGlobal.centerY + GameGlobal.height * 0.25,
             "music-sheet", this.audio.musicOn ? 0 : 1
         ).setInteractive();
@@ -109,6 +110,18 @@ export default class HomeScene extends Scene {
             }
         });
         buttons.push(musicBtn);
+
+        let viewLbIconBtn = this.add.image(
+            GameGlobal.centerX + GameGlobal.width * 0.15,
+            GameGlobal.centerY + GameGlobal.height * 0.25,
+            "view-leaderboard-icon-btn"
+        ).setInteractive();
+        viewLbIconBtn.displayWidth = 0.09 * GameGlobal.width;
+        viewLbIconBtn.displayHeight = this.autoDisplayHeight(viewLbIconBtn);
+        viewLbIconBtn.on("pointerup", () => {
+            this.scene.start("RankScene", { from: this.scene.key });
+        });
+        buttons.push(viewLbIconBtn);
 
         buttons.forEach((button) => {
             button.on("pointerdown", function () {

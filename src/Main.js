@@ -23,8 +23,7 @@ export default class Main extends Phaser.Game {
             input: {
                 touch: true
             },
-            // scene: [HomeScene, MainScene, RankScene],
-            scene: RankScene,
+            scene: [HomeScene, MainScene, RankScene],
         });
 
         const aspectRatio = 568 / 320;

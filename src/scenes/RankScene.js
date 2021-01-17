@@ -6,6 +6,11 @@ export default class RankScene extends Scene {
         super("RankScene");
     }
 
+    init(data) {
+        this.from = data.from;
+        this.currentScore = data.currentScore;
+    }
+
     preload() {
         this.load.image("return-btn", "assets/images/return-btn.png");
     }
@@ -47,9 +52,10 @@ export default class RankScene extends Scene {
             GameGlobal.centerX - 0.42 * GameGlobal.width,
             header.y,
             "return-btn"
-        );
+        ).setInteractive();
         returnBtn.displayWidth = 0.025 * GameGlobal.width;
         returnBtn.displayHeight = this.autoDisplayHeight(returnBtn);
+        returnBtn.on("pointerup", () => this.scene.start(this.from));
 
         let tabFontSize = headerFontSize * 0.85;
         let tabThisWeek = this.add.text(
@@ -91,7 +97,8 @@ export default class RankScene extends Scene {
         }));
 
         wx.getOpenDataContext().postMessage({
-            action: "RankScene"
+            action: "RankScene",
+            score: this.currentScore
         });
 
         if (!this.textures.exists("shared-canvas")) this.textures.addCanvas("shared-canvas", wx.getOpenDataContext().canvas);
@@ -110,6 +117,4 @@ export default class RankScene extends Scene {
             loop: true
         });
     }
-
-    update() { }
 }

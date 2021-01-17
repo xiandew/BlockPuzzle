@@ -385,7 +385,14 @@ export default class MainScene extends Scene {
         this.viewLeaderboardBtn = this.add.image(0, 0.2 * this.gameOverModal.height, "view-leaderboard-btn").setInteractive();
         this.viewLeaderboardBtn.displayWidth = 0.6 * GameGlobal.width;
         this.viewLeaderboardBtn.displayHeight = this.autoDisplayHeight(this.viewLeaderboardBtn);
-        this.viewLeaderboardBtn.on("pointerup", () => this.scene.start("RankScene"));
+        this.viewLeaderboardBtn.on("pointerup", () => {
+            this.scene.pause();
+            this.scene.setVisible(false);
+            this.scene.launch("RankScene", {
+                from: this.scene.key,
+                currentScore: this.currentScore.value
+            });
+        });
         this.audio.addNavTap(this.viewLeaderboardBtn);
 
         this.gameOverModal.add(gameOverModalBackground);
