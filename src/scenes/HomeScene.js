@@ -43,6 +43,7 @@ export default class HomeScene extends Scene {
             continueBtn.displayHeight = this.autoDisplayHeight(continueBtn);
             continueBtn.on("pointerup", () => {
                 this.scene.stop();
+                this.scene.resume("MainScene");
                 this.scene.setVisible(true, "MainScene");
             });
             buttons.push(continueBtn);

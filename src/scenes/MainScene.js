@@ -144,6 +144,7 @@ export default class MainScene extends Scene {
         homeBtn.displayWidth = 0.06 * GameGlobal.width;
         homeBtn.displayHeight = this.autoDisplayHeight(homeBtn);
         homeBtn.on("pointerup", () => {
+            this.scene.pause();
             this.scene.setVisible(false);
             this.scene.launch("HomeScene", { fromMainScene: true });
         });
