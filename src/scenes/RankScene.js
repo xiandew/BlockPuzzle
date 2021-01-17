@@ -27,8 +27,14 @@ export default class RankScene extends Scene {
 
         headerBgCtx.fillStyle = "rgba(255, 255, 255, 0.5)";
         headerBgCtx.beginPath();
-        headerBgCtx.moveTo(0, headerBg.height * 0.6);
-        headerBgCtx.quadraticCurveTo(headerBg.width * 0.5, headerBg.height * 0.78, headerBg.width, headerBg.height * 0.6);
+        let yIntercept = GameGlobal.centerY - 0.332 * GameGlobal.height;
+        headerBgCtx.moveTo(0, yIntercept);
+        headerBgCtx.quadraticCurveTo(
+            headerBg.width * 0.5,
+            GameGlobal.centerY - 0.2816 * GameGlobal.height,
+            headerBg.width,
+            yIntercept
+        );
         headerBgCtx.lineTo(headerBg.width, headerBg.height);
         headerBgCtx.lineTo(0, headerBg.height);
         headerBgCtx.closePath();
