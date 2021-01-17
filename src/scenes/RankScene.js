@@ -53,9 +53,10 @@ export default class RankScene extends Scene {
             header.y,
             "return-btn"
         ).setInteractive();
-        returnBtn.displayWidth = 0.025 * GameGlobal.width;
+        returnBtn.displayWidth = 0.045 * GameGlobal.width;
         returnBtn.displayHeight = this.autoDisplayHeight(returnBtn);
         returnBtn.on("pointerup", () => this.scene.start(this.from));
+        this.audio.addNavTap(returnBtn);
 
         let tabFontSize = headerFontSize * 0.85;
         let tabThisWeek = this.add.text(
