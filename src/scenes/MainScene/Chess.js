@@ -68,6 +68,7 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         this.container.setInteractive({ draggable: true });
         this.container.on("dragstart", function () {
             this.dragging = true;
+            this.setDepth(Infinity);
         });
 
         this.container.on("drag", function (pointer, dragX, dragY) {
@@ -99,6 +100,7 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         let _this = this;
         this.container.on("dragend", function () {
             this.dragging = false;
+            this.setDepth(0);
 
             if (this.list.every((block) => !!block.tile && !block.tile.block) &&
                 this.list.map((block) => block.indexRepr.map((e, i) => e - block.tile.indexRepr[i]).join(",")).every((v, i, a) => v === a[0])) {
