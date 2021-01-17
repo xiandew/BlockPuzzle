@@ -111,15 +111,15 @@ export default class RankScene extends Scene {
         this.sharedCanvas.displayWidth = GameGlobal.width;
         this.sharedCanvas.displayHeight = this.autoDisplayHeight(this.sharedCanvas);
 
-        // this.triggerTimer = this.time.addEvent({
-        //     callback: () => this.sharedCanvas.frame.texture.refresh(),
-        //     callbackScope: this,
-        //     delay: 300,
-        //     loop: true
-        // });
+        this.triggerTimer = this.time.addEvent({
+            callback: () => this.sharedCanvas.frame.texture.refresh(),
+            callbackScope: this,
+            delay: 300,
+            loop: true
+        });
     }
 
-    update() {
-        this.sharedCanvas.frame.texture.refresh();
-    }
+    // update() {
+    //     this.sharedCanvas.frame.texture.refresh();
+    // }
 }
