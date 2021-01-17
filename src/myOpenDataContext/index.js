@@ -41,34 +41,58 @@ class Main {
             );
 
             // Canvas for my rank
-            this.myRankCanvas = wx.createCanvas();
-            this.myRankContext = this.myRankCanvas.getContext("2d");
-            this.myRankCanvas.width = this.leaderboardCanvas.width;
-            this.myRankCanvas.height = 0.12 * this.leaderboardCanvas.height;
+            this.myRecordCanvas = wx.createCanvas();
+            this.myRankContext = this.myRecordCanvas.getContext("2d");
+            this.myRecordCanvas.width = this.leaderboardCanvas.width;
+            this.myRecordCanvas.height = 0.12 * this.leaderboardCanvas.height;
             this.myRankSprite = new Sprite(
-                this.myRankCanvas,
+                this.myRecordCanvas,
                 this.leaderboardSprite.x,
-                0.194 * DataStore.canvasHeight + 0.5 * this.myRankCanvas.height,
-                this.myRankCanvas.width,
-                this.myRankCanvas.height
+                0.194 * DataStore.canvasHeight + 0.5 * this.myRecordCanvas.height,
+                this.myRecordCanvas.width,
+                this.myRecordCanvas.height
             );
+
+            this.recordGrid = new Grid(0, this.myRecordCanvas.height, 0, 0.06 * DataStore.canvasWidth, 0, 0.06 * DataStore.canvasWidth, this.myRecordCanvas.width);
+            this.recordGrid.fontSize = 0.25 * this.recordGrid.height;
+            this.recordGrid.avatarSize = 0.6 * this.recordGrid.height;
+            this.recordGrid.mt = 0.1 * this.recordGrid.height;
+
+            this.paginationPrevBtn = new Sprite(
+                this.assets.get("paginationPrevBtn"),
+                DataStore.canvasWidth * 0.2,
+                DataStore.canvasHeight * 0.96,
+                DataStore.canvasWidth * 0.05
+            );
+
+            this.paginationNextBtn = new Sprite(
+                this.assets.get("paginationNextBtn"),
+                DataStore.canvasWidth * 0.8,
+                this.paginationPrevBtn.y,
+                this.paginationPrevBtn.width
+            );
+
+            this.nRecordsPerPage = 7;
+            this.leaderboardCanvas.height = this.leaderboardDisplayHeight = this.nRecordsPerPage * (this.recordGrid.height + this.recordGrid.mt);
+            this.sy = 0;
+
+            const { pixelRatio } = wx.getSystemInfoSync();
+            wx.onTouchEnd((e) => {
+                if (this.paginationPrevBtn.isTouched(e, pixelRatio)) {
+                    this.sy = Math.max(0, this.sy - this.leaderboardDisplayHeight);
+                } else if (this.paginationNextBtn.isTouched(e, pixelRatio)) {
+                    this.sy = Math.min(
+                        this.leaderboardCanvas.height - this.leaderboardCanvas.height % this.leaderboardDisplayHeight,
+                        this.sy + this.leaderboardDisplayHeight
+                    );
+                }
+
+                this.render(this.sy);
+            });
 
             this.messageQueue.forEach((msg) => {
                 this.onMessage(msg);
             });
-        });
-
-        this.sy = 0;
-        wx.onTouchStart(e => {
-            this.startY = this.sy + e.touches[0].clientY;
-        });
-        wx.onTouchMove(e => {
-            this.sy = this.startY - e.touches[0].clientY;
-            this.render(this.sy);
-        });
-        wx.onTouchEnd(e => {
-            this.sy = ((arr) => { arr.sort((a, b) => { return a - b; }); return arr })([0, this.sy, this.leaderboardCanvas.height - this.leaderboardSprite.height])[1];
-            this.render(this.sy);
         });
     }
 
@@ -87,7 +111,7 @@ class Main {
                 }
             }
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.myRankContext.clearRect(0, 0, this.myRankCanvas.width, this.myRankCanvas.height);
+            this.myRankContext.clearRect(0, 0, this.myRecordCanvas.width, this.myRecordCanvas.height);
             this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
             this.drawLoading();
 
@@ -192,21 +216,18 @@ class Main {
         }
 
         if (!friends.length) return this.drawNoRecords();
-
-        let grid = new Grid(0, this.myRankCanvas.height, 0, 0.06 * DataStore.canvasWidth, 0, 0.06 * DataStore.canvasWidth, this.myRankCanvas.width);
-        grid.fontSize = 0.25 * grid.height;
-        grid.avatarSize = 0.6 * grid.height;
-        grid.mid = grid.top + 0.5 * grid.height;
-        this.drawRecord(this.myRankContext, grid, myself, true);
+        this.recordGrid.top = 0;
+        this.recordGrid.mid = this.recordGrid.top + 0.5 * this.recordGrid.height;
+        this.drawRecord(this.myRankContext, this.recordGrid, myself, true);
 
         this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
-        this.leaderboardCanvas.height = Math.max(this.leaderboardCanvas.height, grid.height * friends.length);
+        this.leaderboardCanvas.height = Math.max(this.leaderboardCanvas.height, (this.recordGrid.height + this.recordGrid.mt) * friends.length);
         friends.forEach((friend, i) => {
-            grid.top = i * grid.height * 1.1 + grid.height * 0.2;
-            grid.mid = grid.top + 0.5 * grid.height;
+            this.recordGrid.top = i * (this.recordGrid.height + this.recordGrid.mt);
+            this.recordGrid.mid = this.recordGrid.top + 0.5 * this.recordGrid.height;
 
             this.leaderboardContext.fillStyle = "rgba(255, 255, 255, 0)";
-            this.drawRecord(this.leaderboardContext, grid, friend);
+            this.drawRecord(this.leaderboardContext, this.recordGrid, friend);
         });
 
         // Refresh the shared canvas
@@ -240,7 +261,6 @@ class Main {
             ctx.fill();
             if (clip) ctx.clip();
         }
-
 
         drawAvatarBg();
         avatar.onload = () => {
@@ -326,7 +346,36 @@ class Main {
         // if (DataStore.currentScene !== RankScene.toString()) return;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.myRankSprite.render(this.ctx);
-        this.leaderboardSprite.renderCrop(this.ctx, 0, sy, this.leaderboardCanvas.width, this.leaderboardSprite.height);
+        this.leaderboardSprite.renderCrop(this.ctx, 0, sy, this.leaderboardCanvas.width, this.leaderboardDisplayHeight, this.leaderboardDisplayHeight);
+
+        this.paginationPrevBtn.render(this.ctx);
+        this.paginationNextBtn.render(this.ctx);
+
+        this.ctx.globalCompositeOperation = "source-atop";
+        if (sy == 0) {
+            this.ctx.fillStyle = "#e3e3e3";
+        } else {
+            this.ctx.fillStyle = "#00c777";
+        }
+        this.ctx.fillRect(
+            this.paginationPrevBtn.startX,
+            this.paginationPrevBtn.startY,
+            this.paginationPrevBtn.width,
+            this.paginationPrevBtn.height,
+        );
+
+        if (sy + this.leaderboardDisplayHeight >= this.leaderboardCanvas.height) {
+            this.ctx.fillStyle = "#e3e3e3";
+        } else {
+            this.ctx.fillStyle = "#00c777";
+        }
+        this.ctx.fillRect(
+            this.paginationNextBtn.startX,
+            this.paginationNextBtn.startY,
+            this.paginationNextBtn.width,
+            this.paginationNextBtn.height,
+        );
+        this.ctx.globalCompositeOperation = "source-over";
     }
 
 }

@@ -23,13 +23,13 @@ export default class Sprite {
         );
     }
 
-    renderCrop(ctx, sx, sy, sWidth, sHeight) {
+    renderCrop(ctx, sx, sy, sWidth, sHeight, height = this.height) {
         ctx.drawImage(
             this.img, sx, sy, sWidth, sHeight,
             this.startX,
             this.startY,
             this.width,
-            this.height
+            height
         )
     }
 
@@ -42,9 +42,9 @@ export default class Sprite {
         );
     }
 
-    isTouched(e) {
-        let x = (e.touches[0] || e.changedTouches[0]).clientX;
-        let y = (e.touches[0] || e.changedTouches[0]).clientY;
+    isTouched(e, pixelRatio) {
+        let x = (e.touches[0] || e.changedTouches[0]).clientX * (pixelRatio || 1);
+        let y = (e.touches[0] || e.changedTouches[0]).clientY * (pixelRatio || 1);
         return (
             x >= this.startX &&
             y >= this.startY &&
