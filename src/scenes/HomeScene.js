@@ -45,7 +45,7 @@ export default class HomeScene extends Scene {
             continueBtn.on("pointerup", () => {
                 this.scene.stop();
                 this.scene.resume("MainScene");
-                this.scene.setVisible(true, "MainScene");
+                this.scene.bringToTop("MainScene");
             });
             buttons.push(continueBtn);
 

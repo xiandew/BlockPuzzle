@@ -65,7 +65,7 @@ export default class RankScene extends Scene {
             if (this.scene.isPaused(this.from)) {
                 this.scene.stop();
                 this.scene.resume(this.from);
-                this.scene.setVisible(true, this.from);
+                this.scene.bringToTop(this.from);
             } else {
                 this.scene.start(this.from);
             }

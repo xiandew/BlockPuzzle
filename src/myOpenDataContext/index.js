@@ -14,7 +14,7 @@ class Main {
         static BESTRECORD = 2;
     };
     constructor() {
-        this.messageQueue = [];
+        this.messageQueue = new Set();
         wx.onMessage(this.onMessage.bind(this));
 
         AssetsLoader.getInstance().onLoaded((assets) => {
@@ -90,15 +90,21 @@ class Main {
                 this.render(this.sy);
             });
 
-            this.messageQueue.forEach((msg) => {
-                this.onMessage(msg);
-            });
+            this.consumeMsgQueue();
+        });
+    }
+
+    consumeMsgQueue() {
+        this.messageQueue.forEach((msg) => {
+            this.onMessage(msg);
         });
     }
 
     onMessage(msg) {
-        if (!this.assets) {
-            return this.messageQueue.push(msg);
+        if (!this.assets || this.loadingIntervalId) {
+            return this.messageQueue.add(msg);
+        } else {
+            this.messageQueue.delete(msg);
         }
 
         const action = msg.action;
@@ -236,6 +242,9 @@ class Main {
 
         // Refresh the shared canvas
         this.render();
+
+        this.loadingIntervalId = null;
+        this.consumeMsgQueue();
     }
 
     drawRecord(ctx, grid, friend, isMyself = false) {
