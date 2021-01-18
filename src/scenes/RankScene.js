@@ -113,6 +113,7 @@ export default class RankScene extends Scene {
 
         wx.getOpenDataContext().postMessage({
             action: "RankScene",
+            tab: tabThisWeek.tab,
             score: this.currentScore
         });
 
@@ -132,8 +133,4 @@ export default class RankScene extends Scene {
             loop: true
         });
     }
-
-    // update() {
-    //     this.sharedCanvas.frame.texture.refresh();
-    // }
 }
