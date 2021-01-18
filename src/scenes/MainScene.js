@@ -178,7 +178,8 @@ export default class MainScene extends Scene {
                     // Make sure the best record in the local storage is synced
                     wx.getOpenDataContext().postMessage({
                         action: "RankScene",
-                        score: bestRecord
+                        score: bestRecord,
+                        update_time: data.lastUpdate
                     });
                 }
             }

@@ -61,7 +61,15 @@ export default class RankScene extends Scene {
         ).setInteractive();
         returnBtn.displayWidth = 0.045 * GameGlobal.width;
         returnBtn.displayHeight = this.autoDisplayHeight(returnBtn);
-        returnBtn.on("pointerup", () => this.scene.start(this.from));
+        returnBtn.on("pointerup", () => {
+            if (this.scene.isPaused(this.from)) {
+                this.scene.stop();
+                this.scene.resume(this.from);
+                this.scene.setVisible(true, this.from);
+            } else {
+                this.scene.start(this.from);
+            }
+        });
         this.audio.addNavTap(returnBtn);
 
         let tabFontSize = headerFontSize * 0.85;

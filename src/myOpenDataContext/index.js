@@ -131,8 +131,12 @@ class Main {
 
                     // Update week record
                     if (
-                        !record.wkRecord.update_time || record.wkRecord.update_time < Week.getThisMonday().getTime() ||
-                        !record.wkRecord.score || msg.score > record.wkRecord.score
+                        (
+                            !record.wkRecord.update_time || record.wkRecord.update_time < Week.getThisMonday().getTime() ||
+                            !record.wkRecord.score || msg.score > record.wkRecord.score
+                        ) && (
+                            !msg.update_time || msg.update_time > Week.getThisMonday().getTime()
+                        )
                     ) {
                         record.wkRecord.score = msg.score;
                         record.wkRecord.update_time = now.getTime();
