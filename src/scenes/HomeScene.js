@@ -119,7 +119,9 @@ export default class HomeScene extends Scene {
         viewLbIconBtn.displayWidth = 0.09 * GameGlobal.width;
         viewLbIconBtn.displayHeight = this.autoDisplayHeight(viewLbIconBtn);
         viewLbIconBtn.on("pointerup", () => {
-            this.scene.start("RankScene", { from: this.scene.key });
+            this.scene.pause();
+            this.scene.launch("RankScene", { from: this.scene.key });
+            this.scene.bringToTop("RankScene");
         });
         buttons.push(viewLbIconBtn);
 

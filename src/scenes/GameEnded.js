@@ -77,6 +77,8 @@ export default class GameEnded extends Scene {
         this.undoTextBtn.displayHeight = this.autoDisplayHeight(this.undoTextBtn);
         this.undoTextBtn.on("pointerup", () => {
             this.hideGameOverModal();
+            this.scene.stop();
+            this.scene.resume("MainScene");
             this.scene.get("MainScene").undoBtn.emit("pointerup");
         });
         this.audio.addNavTap(this.undoTextBtn);
