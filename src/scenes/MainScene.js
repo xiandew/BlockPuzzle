@@ -191,10 +191,6 @@ export default class MainScene extends Scene {
             bestRecord, 0.05 * GameGlobal.width
         ).setOrigin(0, 0.5);
         this.bestScore.value = bestRecord;
-
-        this.scene.pause();
-        this.scene.launch("GameEnded", { currentScore: this.currentScore.value });
-        this.scene.bringToTop("GameEnded");
     }
 
     update() {
@@ -309,9 +305,9 @@ export default class MainScene extends Scene {
                 chess.shake(() => {
                     chess.shaked = true;
                     if (this.chesses.every((chess) => chess.shaked)) {
-                        // this.scene.pause();
-                        // this.scene.launch("GameEnded", { currentScore: this.currentScore.value });
-                        // this.scene.bringToTop("GameEnded");
+                        this.scene.pause();
+                        this.scene.launch("GameEnded", { currentScore: this.currentScore.value });
+                        this.scene.bringToTop("GameEnded");
                     }
                 });
             });
