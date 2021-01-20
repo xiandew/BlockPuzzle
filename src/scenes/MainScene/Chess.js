@@ -1,10 +1,10 @@
 import Phaser from "../../libs/phaser-full.min";
-import UCB from "./utils/UCB";
+import MAB from "./utils/MAB";
 import { patterns, colors } from "./Data";
 
 export default class Chess extends Phaser.Physics.Arcade.Group {
     static directions = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
-    static ucb = new UCB(patterns.length);
+    static mab = new MAB(patterns.length);
 
     constructor(scene, dx, dy) {
         super(scene.physics.world, scene);
@@ -24,11 +24,11 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
             y: this.origin.y
         };
 
-        const patternIndex = Chess.ucb.play();
-        Chess.ucb.update(patternIndex, 0);
+        const patternIndex = Chess.mab.play();
+        Chess.mab.update(patternIndex);
         const pattern = patterns[patternIndex];
 
-        const { color, colorIndex } = UCB.randomChoice(colors.map((color, colorIndex) => { return { color, colorIndex }; }));
+        const { color, colorIndex } = MAB.randomChoice(colors.map((color, colorIndex) => { return { color, colorIndex }; }));
         this.color = color;
         this.colorIndex = colorIndex;
         this.container = scene.add.container(this.start.x, this.start.y);
