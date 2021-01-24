@@ -2,6 +2,7 @@ import Scene from "./Scene";
 import Chess from "./MainScene/Chess";
 import Board from "./MainScene/Board";
 import GameGlobal from "../data/GameGlobal";
+import Tile from "./MainScene/Tile";
 
 export default class MainScene extends Scene {
     constructor() {
@@ -51,8 +52,7 @@ export default class MainScene extends Scene {
                 }
 
                 this.chess.container.list.forEach((block) => {
-                    block.tile.block.destroy();
-                    block.tile.block = null;
+                    block.tile.block.setVisible(false);
                 });
                 this.chess.container.setVisible(true);
                 this.chess.moveToOrigin();
@@ -63,7 +63,7 @@ export default class MainScene extends Scene {
             }
         });
 
-        this.undoBtn.on("placechess", function (chess) {
+        this.undoBtn.onPlaceChess = function (chess) {
             if (this.alpha != 1) {
                 _this.tweens.add({
                     targets: this,
@@ -92,46 +92,7 @@ export default class MainScene extends Scene {
             if (_this.chesses.length == Chess.directions.length) {
                 _this.chesses.forEach((chess) => chess.enter());
             }
-        });
-
-        this.events.on("placechess", (chess) => {
-            this.chesses.splice(this.chesses.indexOf(chess), 1);
-
-            const matches = this.board.tiles.reduce((matches, row, i) => {
-                return matches
-                    .concat(match(row) || [])
-                    .concat(match(this.board.tiles.map((row) => row[i])) || []);
-
-                function match(row) {
-                    if (row.every((tile) => tile.block)) {
-                        return [row];
-                    }
-                    return null;
-                }
-            }, []);
-
-            let i = 0;
-            matches.forEach((match) => {
-                this.score(match, () => {
-                    i++;
-                    if (i == matches.length) {
-                        this.tryGameOver();
-                    }
-                });
-            });
-
-            if (matches.length) {
-                this.undoBtn.emit("placechess");
-                chess.container.destroy();
-            } else {
-                this.undoBtn.emit("placechess", chess);
-                this.tryGameOver();
-            }
-        });
-        this.events.on("shutdown", () => {
-            this.events.off("placechess");
-            this.events.off("shutdown");
-        });
+        }
 
         let homeBtn = this.add.image(
             GameGlobal.centerX - GameGlobal.width * 0.4,
@@ -235,6 +196,41 @@ export default class MainScene extends Scene {
         });
     }
 
+    onPlaceChess(chess) {
+        this.chesses.splice(this.chesses.indexOf(chess), 1);
+
+        const matches = this.board.tiles.reduce((matches, row, i) => {
+            return matches
+                .concat(match(row) || [])
+                .concat(match(this.board.tiles.map((row) => row[i])) || []);
+
+            function match(row) {
+                if (row.every((tile) => tile.block.visible)) {
+                    return [row];
+                }
+                return null;
+            }
+        }, []);
+
+        let i = 0;
+        matches.forEach((match) => {
+            this.score(match, () => {
+                i++;
+                if (i == matches.length) {
+                    this.tryGameOver();
+                }
+            });
+        });
+
+        if (matches.length) {
+            this.undoBtn.onPlaceChess();
+            chess.container.destroy();
+        } else {
+            this.undoBtn.onPlaceChess(chess);
+            this.tryGameOver();
+        }
+    }
+
     score(row, onComplete) {
         this.audio.playMatch();
         this.currentScore.value += row.length;
@@ -259,7 +255,7 @@ export default class MainScene extends Scene {
         }
 
         row.map((tile) => tile.block).forEach((block, i) => {
-            if (!block) {
+            if (!block.visible) {
                 return;
             }
 
@@ -274,6 +270,8 @@ export default class MainScene extends Scene {
                 scale: 0.05
             });
 
+            let blockDisplayWidth = block.displayWidth;
+            let blockDisplayHeight = block.displayHeight;
             this.tweens.add({
                 targets: block,
                 duration: 400,
@@ -281,9 +279,10 @@ export default class MainScene extends Scene {
                 displayHeight: { start: block.displayHeight, to: 0 },
                 ease: "Power2",
                 onComplete: () => {
-                    block.destroy();
-                    row[i].block = null;
-                    if (row.every((tile) => !tile.block)) {
+                    block.setVisible(false);
+                    block.displayWidth = blockDisplayWidth;
+                    block.displayHeight = blockDisplayHeight;
+                    if (row.every((tile) => !tile.block.visible)) {
                         onComplete();
                     }
                 }
@@ -297,7 +296,7 @@ export default class MainScene extends Scene {
                 return chess.container.list.every((block) => {
                     const r = this.board.tiles[tile.indexRepr[0] + block.indexRepr[0]];
                     const t = r && r[tile.indexRepr[1] + block.indexRepr[1]];
-                    return t && !t.block;
+                    return t && !t.block.visible;
                 });
             });
         })) {

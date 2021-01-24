@@ -1,6 +1,7 @@
 import Phaser from "../../libs/phaser-full.min";
 import MAB from "./utils/MAB";
 import { patterns, colors } from "./Data";
+import Block from "./Block";
 
 export default class Chess extends Phaser.Physics.Arcade.Group {
     static directions = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
@@ -29,8 +30,6 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         const pattern = patterns[patternIndex];
 
         const { color, colorIndex } = MAB.randomChoice(colors.map((color, colorIndex) => { return { color, colorIndex }; }));
-        this.color = color;
-        this.colorIndex = colorIndex;
         this.container = scene.add.container(this.start.x, this.start.y);
         this.container.alpha = 0;
         this.container.setSize(
@@ -51,15 +50,14 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         this.offset = getOffet(pattern.indexRepr);
         this.container.add(
             pattern.indexRepr.map((blockIdxRepr) => {
-                let block = scene.add.image(
+                let block = new Block(
+                    scene,
                     (blockIdxRepr[0] - this.offset[0]) * scene.board.gridSize,
                     (blockIdxRepr[1] - this.offset[1]) * scene.board.gridSize,
-                    "tile"
+                    blockIdxRepr,
+                    colorIndex
                 );
-                block.indexRepr = blockIdxRepr;
-                block.displayWidth = block.displayHeight = scene.board.tileSize;
-                block.setTint(color);
-                block.colorIndex = this.colorIndex;
+
                 return block;
             })
         );
@@ -102,23 +100,16 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
             this.dragging = false;
             this.setDepth(0);
 
-            if (this.list.every((block) => !!block.tile && !block.tile.block) &&
+            if (this.list.every((block) => !!block.tile && !block.tile.block.visible) &&
                 this.list.map((block) => block.indexRepr.map((e, i) => e - block.tile.indexRepr[i]).join(",")).every((v, i, a) => v === a[0])) {
 
                 this.list.forEach((block) => {
-                    block.tile.block = scene.add.image(
-                        block.tile.x,
-                        block.tile.y,
-                        "tile"
-                    );
-                    block.tile.block.displayWidth = block.tile.displayWidth;
-                    block.tile.block.displayHeight = block.tile.displayHeight;
-                    block.tile.block.setTint(color);
-                    block.tile.block.colorIndex = colorIndex;
+                    block.tile.block.setColor(block.colorIndex);
+                    block.tile.block.setVisible(true);
                 });
 
                 this.setVisible(false);
-                scene.events.emit("placechess", _this);
+                scene.onPlaceChess(_this);
 
                 return scene.audio.playPlaceChess();
             }
