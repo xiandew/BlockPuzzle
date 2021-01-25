@@ -110,11 +110,9 @@ class Main {
         const action = msg.action;
         if (action === "RankScene") {
             if (msg.tab) {
-                if (msg.tab === this.activeTab) {
-                    return;
-                } else {
-                    this.activeTab = msg.tab === "thisWeek" ? Main.Tab.THISWEEK : Main.Tab.BESTRECORD;
-                }
+                let tab = msg.tab === "thisWeek" ? Main.Tab.THISWEEK : Main.Tab.BESTRECORD;
+                if (tab === this.activeTab) return;
+                this.activeTab = tab;
             }
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.myRankContext.clearRect(0, 0, this.myRecordCanvas.width, this.myRecordCanvas.height);
@@ -225,23 +223,26 @@ class Main {
             };
         }
 
-        if (!friends.length) return this.drawNoRecords();
-        this.recordGrid.top = 0;
-        this.recordGrid.mid = this.recordGrid.top + 0.5 * this.recordGrid.height;
-        this.drawRecord(this.myRankContext, this.recordGrid, myself, true);
-
-        this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
-        this.leaderboardCanvas.height = Math.max(this.leaderboardCanvas.height, (this.recordGrid.height + this.recordGrid.mt) * friends.length);
-        friends.forEach((friend, i) => {
-            this.recordGrid.top = i * (this.recordGrid.height + this.recordGrid.mt);
+        if (friends.length) {
+            this.recordGrid.top = 0;
             this.recordGrid.mid = this.recordGrid.top + 0.5 * this.recordGrid.height;
+            this.drawRecord(this.myRankContext, this.recordGrid, myself, true);
 
-            this.leaderboardContext.fillStyle = "rgba(255, 255, 255, 0)";
-            this.drawRecord(this.leaderboardContext, this.recordGrid, friend);
-        });
+            this.leaderboardContext.clearRect(0, 0, this.leaderboardCanvas.width, this.leaderboardCanvas.height);
+            this.leaderboardCanvas.height = Math.max(this.leaderboardCanvas.height, (this.recordGrid.height + this.recordGrid.mt) * friends.length);
+            friends.forEach((friend, i) => {
+                this.recordGrid.top = i * (this.recordGrid.height + this.recordGrid.mt);
+                this.recordGrid.mid = this.recordGrid.top + 0.5 * this.recordGrid.height;
 
-        // Refresh the shared canvas
-        this.render();
+                this.leaderboardContext.fillStyle = "rgba(255, 255, 255, 0)";
+                this.drawRecord(this.leaderboardContext, this.recordGrid, friend);
+            });
+
+            // Refresh the shared canvas
+            this.render();
+        } else {
+            this.drawNoRecords();
+        }
 
         this.loadingIntervalId = null;
         this.consumeMsgQueue();
