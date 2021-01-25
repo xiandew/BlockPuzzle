@@ -5,4 +5,4 @@ A WeChat minigame made with Phaser3.
 ## You can play it here!
 Scan the mini game code with WeCaht app.
 
-![扫码_搜索联合传播样式-微信标准绿版.png](https://i.loli.net/2021/01/19/PdEuCvmQBA5xqlb.png)
+![扫码_搜索联合传播样式-微信标准绿版.png](https://i.loli.net/2021/01/26/ruUehYi5HD4VwEx.png)
