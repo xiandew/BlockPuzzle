@@ -64,6 +64,13 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
         this.addMultiple(this.container.list);
 
         this.container.setInteractive({ draggable: true });
+        this.addDragEvents();
+
+        this.enter();
+    }
+
+    addDragEvents() {
+        let _this = this;
         this.container.on("dragstart", function () {
             this.dragging = true;
             this.setDepth(Infinity);
@@ -76,13 +83,13 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
                 this.y = dragY;
             } else {
                 const draggedX = dragX - this.x;
-                const deltaX = median([-scene.board.gridSize, draggedX, scene.board.gridSize]);
+                const deltaX = median([-_this.scene.board.gridSize, draggedX, _this.scene.board.gridSize]);
                 if (deltaX != draggedX) {
                     this.setX(this.x + deltaX);
                 }
 
                 const draggedY = dragY - this.y;
-                const deltaY = median([-scene.board.gridSize, draggedY, scene.board.gridSize]);
+                const deltaY = median([-_this.scene.board.gridSize, draggedY, _this.scene.board.gridSize]);
                 if (deltaY != draggedY) {
                     this.setY(this.y + deltaY);
                 }
@@ -95,39 +102,51 @@ export default class Chess extends Phaser.Physics.Arcade.Group {
             }
         });
 
-        let _this = this;
         this.container.on("dragend", function () {
             this.dragging = false;
             this.setDepth(0);
 
-            if (this.list.every((block) => !!block.tile && !block.tile.block.visible) &&
+            if (this.list.every((block) => !!block.tile && !block.tile.occupied) &&
                 this.list.map((block) => block.indexRepr.map((e, i) => e - block.tile.indexRepr[i]).join(",")).every((v, i, a) => v === a[0])) {
 
-                this.list.forEach((block) => {
-                    block.tile.block.setColor(block.colorIndex);
-                    block.tile.block.setVisible(true);
-                });
-
-                this.setVisible(false);
-                scene.onPlaceChess(_this);
-
-                return scene.audio.playPlaceChess();
+                this.iterate((block) => block.tile.occupied = true);
+                _this.removeDragEvents();
+                _this.scene.onPlaceChess(_this);
+                return;
             }
 
             this.onBoard = false;
             _this.moveToOrigin();
         });
-
-        this.enter();
     }
 
-    moveToOrigin() {
+    removeDragEvents() {
+        this.container.off("dragstart");
+        this.container.off("drag");
+        this.container.off("dragend");
+    }
+
+    commit() {
+        this.container.iterate((block) => {
+            block.tile.block.setColor(block.colorIndex);
+            block.tile.block.setVisible(true);
+        });
+        this.container.destroy();
+    }
+
+    takeback() {
+        this.container.iterate((block) => block.tile.occupied = false);
+        this.moveToOrigin(() => this.addDragEvents());
+    }
+
+    moveToOrigin(onComplete = () => { }) {
         this.scene.tweens.add({
             targets: this.container,
             x: this.origin.x,
             y: this.origin.y,
             duration: 400,
-            ease: "Power2"
+            ease: "Power2",
+            onComplete
         });
     }
 

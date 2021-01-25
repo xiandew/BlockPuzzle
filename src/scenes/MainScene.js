@@ -42,25 +42,18 @@ export default class MainScene extends Scene {
         this.undoBtn.alpha = 0;
         let _this = this;
         this.undoBtn.on("pointerup", function () {
-            if (this.alpha == 1) {
-                if (!this.chess) {
-                    return;
-                }
-
-                if (_this.chesses.length == Chess.directions.length) {
-                    _this.chesses.forEach((chess) => chess.exit());
-                }
-
-                this.chess.container.list.forEach((block) => {
-                    block.tile.block.setVisible(false);
-                });
-                this.chess.container.setVisible(true);
-                this.chess.moveToOrigin();
-
-                _this.chesses.push(this.chess);
-                this.chess = null;
-                this.setTint(0xe5e5e5);
+            if (this.alpha != 1 || !this.chess) {
+                return;
             }
+
+            if (_this.chesses.length == Chess.directions.length) {
+                _this.chesses.forEach((chess) => chess.exit());
+            }
+
+            _this.chesses.push(this.chess);
+            this.chess.takeback();
+            this.chess = null;
+            this.setTint(0xe5e5e5);
         });
 
         this.undoBtn.onPlaceChess = function (chess) {
@@ -74,7 +67,7 @@ export default class MainScene extends Scene {
             }
 
             if (this.chess) {
-                this.chess.container.destroy();
+                this.chess.commit();
             }
 
             if (!chess) {
@@ -84,14 +77,6 @@ export default class MainScene extends Scene {
             }
 
             this.chess = chess;
-
-            if (!_this.chesses.length) {
-                _this.createChesses();
-            }
-
-            if (_this.chesses.length == Chess.directions.length) {
-                _this.chesses.forEach((chess) => chess.enter());
-            }
         }
 
         let homeBtn = this.add.image(
@@ -189,7 +174,7 @@ export default class MainScene extends Scene {
 
             chess.on("overlapend", function (chess) {
                 chess.container.onBoard = false;
-                chess.container.list.forEach((block) => block.tile = null);
+                chess.container.iterate((block) => block.tile = null);
             });
 
             this.physics.add.overlap(chess.container, this.board);
@@ -197,7 +182,15 @@ export default class MainScene extends Scene {
     }
 
     onPlaceChess(chess) {
+        this.audio.playPlaceChess();
         this.chesses.splice(this.chesses.indexOf(chess), 1);
+        if (!this.chesses.length) {
+            this.createChesses();
+        }
+
+        if (this.chesses.length == Chess.directions.length) {
+            this.chesses.forEach((chess) => chess.enter());
+        }
 
         const matches = this.board.tiles.reduce((matches, row, i) => {
             return matches
@@ -205,12 +198,20 @@ export default class MainScene extends Scene {
                 .concat(match(this.board.tiles.map((row) => row[i])) || []);
 
             function match(row) {
-                if (row.every((tile) => tile.block.visible)) {
+                if (row.every((tile) => tile.occupied)) {
                     return [row];
                 }
                 return null;
             }
         }, []);
+
+        if (matches.length) {
+            this.undoBtn.onPlaceChess();
+            chess.commit();
+        } else {
+            this.undoBtn.onPlaceChess(chess);
+            this.tryGameOver();
+        }
 
         let i = 0;
         matches.forEach((match) => {
@@ -221,14 +222,6 @@ export default class MainScene extends Scene {
                 }
             });
         });
-
-        if (matches.length) {
-            this.undoBtn.onPlaceChess();
-            chess.container.destroy();
-        } else {
-            this.undoBtn.onPlaceChess(chess);
-            this.tryGameOver();
-        }
     }
 
     score(row, onComplete) {
@@ -254,8 +247,9 @@ export default class MainScene extends Scene {
             });
         }
 
-        row.map((tile) => tile.block).forEach((block, i) => {
-            if (!block.visible) {
+        row.forEach((tile) => {
+            let block = tile.block;
+            if (!tile.occupied) {
                 return;
             }
 
@@ -282,7 +276,9 @@ export default class MainScene extends Scene {
                     block.setVisible(false);
                     block.displayWidth = blockDisplayWidth;
                     block.displayHeight = blockDisplayHeight;
-                    if (row.every((tile) => !tile.block.visible)) {
+
+                    tile.occupied = false;
+                    if (row.every((tile) => !tile.occupied)) {
                         onComplete();
                     }
                 }
@@ -296,7 +292,7 @@ export default class MainScene extends Scene {
                 return chess.container.list.every((block) => {
                     const r = this.board.tiles[tile.indexRepr[0] + block.indexRepr[0]];
                     const t = r && r[tile.indexRepr[1] + block.indexRepr[1]];
-                    return t && !t.block.visible;
+                    return t && !t.occupied;
                 });
             });
         })) {
